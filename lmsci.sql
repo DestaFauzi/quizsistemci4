@@ -33,7 +33,6 @@ CREATE TABLE IF NOT EXISTS `badge` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.badge: ~0 rows (approximately)
-DELETE FROM `badge`;
 
 -- Dumping structure for table lmsci.kelas
 CREATE TABLE IF NOT EXISTS `kelas` (
@@ -50,8 +49,7 @@ CREATE TABLE IF NOT EXISTS `kelas` (
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.kelas: ~6 rows (approximately)
-DELETE FROM `kelas`;
-INSERT INTO `kelas` (`id`, `nama_kelas`, `deskripsi`, `status`, `guru_id`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `kelas` (`id`, `nama_kelas`, `deskripsi`, `status`, `guru_id`, `created_at`, `updated_at`) VALUES
 	(1, 'Kelas Sastra Jepang', 'Kelas Sastra Jepang adalah kelas', 'aktif', 2, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
 	(2, 'Kelas Bahasa Inggris', 'Kelas Bahasa Inggris Adalah kelas ..', 'non_aktif', 2, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
 	(3, 'kelas sastra mesin', 'kelas', 'non_aktif', 2, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
@@ -77,8 +75,7 @@ CREATE TABLE IF NOT EXISTS `kelas_siswa` (
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.kelas_siswa: ~4 rows (approximately)
-DELETE FROM `kelas_siswa`;
-INSERT INTO `kelas_siswa` (`id`, `kelas_id`, `murid_id`, `status`, `status_materi`, `status_quiz`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `kelas_siswa` (`id`, `kelas_id`, `murid_id`, `status`, `status_materi`, `status_quiz`, `created_at`, `updated_at`) VALUES
 	(6, 5, 3, '', 'belum_diakses', 'belum_dikerjakan', '2025-05-06 15:31:22', '2025-05-06 18:16:09'),
 	(7, 4, 3, '', 'belum_diakses', 'belum_dikerjakan', '2025-05-06 17:20:29', '2025-05-06 18:15:09'),
 	(8, 3, 3, '', 'belum_diakses', 'belum_dikerjakan', '2025-05-06 19:11:40', '2025-05-06 19:11:40'),
@@ -100,8 +97,7 @@ CREATE TABLE IF NOT EXISTS `materi` (
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.materi: ~15 rows (approximately)
-DELETE FROM `materi`;
-INSERT INTO `materi` (`id`, `kelas_id`, `judul`, `file_name`, `file_path`, `level`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `materi` (`id`, `kelas_id`, `judul`, `file_name`, `file_path`, `level`, `created_at`, `updated_at`) VALUES
 	(5, 1, 'Materi 1 Sastra Jepang', 'Formulir pengajuan magang 2025 wesclic.pdf', 'uploads/materi/kelas_1/Formulir pengajuan magang 2025 wesclic.pdf', 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
 	(6, 1, 'Materi 2', 'Sistem Informasi Quiz.pdf', 'uploads/materi/kelas_1/Sistem Informasi Quiz.pdf', 2, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
 	(7, 3, 'Materi 1', 'Faktor Merokok Dikalang Remaja Saat Ini.pdf', 'uploads/materi/kelas_3/Faktor Merokok Dikalang Remaja Saat Ini.pdf', 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
@@ -131,8 +127,7 @@ CREATE TABLE IF NOT EXISTS `migrations` (
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.migrations: ~13 rows (approximately)
-DELETE FROM `migrations`;
-INSERT INTO `migrations` (`id`, `version`, `class`, `group`, `namespace`, `time`, `batch`) VALUES
+INSERT IGNORE INTO `migrations` (`id`, `version`, `class`, `group`, `namespace`, `time`, `batch`) VALUES
 	(1, '2025-05-05-104956', 'App\\Database\\Migrations\\CreateRolesTable', 'default', 'App', 1746443320, 1),
 	(2, '2025-05-05-105004', 'App\\Database\\Migrations\\CreateUsersTable', 'default', 'App', 1746443320, 1),
 	(3, '2025-05-05-111216', 'App\\Database\\Migrations\\CreateKelasTable', 'default', 'App', 1746443711, 2),
@@ -163,8 +158,7 @@ CREATE TABLE IF NOT EXISTS `quiz` (
 ) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.quiz: ~16 rows (approximately)
-DELETE FROM `quiz`;
-INSERT INTO `quiz` (`id`, `kelas_id`, `judul_quiz`, `jumlah_soal`, `waktu`, `level`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `quiz` (`id`, `kelas_id`, `judul_quiz`, `jumlah_soal`, `waktu`, `level`, `created_at`, `updated_at`) VALUES
 	(14, 1, 'Quiz Level 1', 2, 2, 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
 	(15, 1, 'Quiz level 2', 2, 2, 2, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
 	(16, 3, 'Quiz 1', 2, 2, 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
@@ -197,8 +191,7 @@ CREATE TABLE IF NOT EXISTS `quiz_answers` (
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.quiz_answers: ~20 rows (approximately)
-DELETE FROM `quiz_answers`;
-INSERT INTO `quiz_answers` (`id`, `quiz_id`, `murid_id`, `kelas_id`, `soal_id`, `jawaban_pilih`, `is_correct`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `quiz_answers` (`id`, `quiz_id`, `murid_id`, `kelas_id`, `soal_id`, `jawaban_pilih`, `is_correct`, `created_at`, `updated_at`) VALUES
 	(1, 16, 3, 0, 23, 'A', 0, '2025-05-06 11:33:17', '2025-05-06 11:33:17'),
 	(2, 16, 3, 0, 24, 'A', 0, '2025-05-06 11:33:17', '2025-05-06 11:33:17'),
 	(3, 16, 3, 0, 23, 'A', 0, '2025-05-06 11:36:05', '2025-05-06 11:36:05'),
@@ -233,8 +226,7 @@ CREATE TABLE IF NOT EXISTS `quiz_results` (
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.quiz_results: ~10 rows (approximately)
-DELETE FROM `quiz_results`;
-INSERT INTO `quiz_results` (`id`, `quiz_id`, `murid_id`, `kelas_id`, `score`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `quiz_results` (`id`, `quiz_id`, `murid_id`, `kelas_id`, `score`, `created_at`, `updated_at`) VALUES
 	(1, 16, 3, 0, 0, '2025-05-06 11:33:17', '2025-05-06 11:33:17'),
 	(2, 16, 3, 0, 0, '2025-05-06 11:36:05', '2025-05-06 11:36:05'),
 	(3, 16, 3, 0, 0, '2025-05-06 11:38:52', '2025-05-06 11:38:52'),
@@ -254,8 +246,7 @@ CREATE TABLE IF NOT EXISTS `roles` (
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.roles: ~6 rows (approximately)
-DELETE FROM `roles`;
-INSERT INTO `roles` (`id`, `role_name`) VALUES
+INSERT IGNORE INTO `roles` (`id`, `role_name`) VALUES
 	(1, 'admin'),
 	(2, 'guru'),
 	(3, 'murid'),
@@ -282,8 +273,7 @@ CREATE TABLE IF NOT EXISTS `soal` (
 ) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.soal: ~35 rows (approximately)
-DELETE FROM `soal`;
-INSERT INTO `soal` (`id`, `quiz_id`, `soal`, `jawaban_a`, `jawaban_b`, `jawaban_c`, `jawaban_d`, `jawaban_benar`, `poin`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `soal` (`id`, `quiz_id`, `soal`, `jawaban_a`, `jawaban_b`, `jawaban_c`, `jawaban_d`, `jawaban_benar`, `poin`, `created_at`, `updated_at`) VALUES
 	(19, 14, 'oko', 'j', 'hj', 'jj', 'jj', 'a', 10, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
 	(20, 14, 'nn', 'j', 'm', 'jk', 'kk', 'a', 10, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
 	(21, 15, 'm', 'mm', 'mm', 'm', 'm', 'a', 10, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
@@ -337,8 +327,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.users: ~3 rows (approximately)
-DELETE FROM `users`;
-INSERT INTO `users` (`id`, `username`, `email`, `password`, `role_id`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `users` (`id`, `username`, `email`, `password`, `role_id`, `created_at`, `updated_at`) VALUES
 	(1, 'adminuser', 'admin@example.com', '$2y$10$ca76lqTJeqhsFRdUMJWh2uIO0Gb9TYde3JP30i7/Ov3oY3qdOuvKK', 1, '2025-05-05 11:08:55', '2025-05-05 11:08:55'),
 	(2, 'guruuser', 'guru@example.com', '$2y$10$D2mL09ypU4Y9BVv8eWTte.sguELn4Tlx0AxJs5txtCGVdQmsYbEAa', 2, '2025-05-05 11:08:55', '2025-05-05 11:08:55'),
 	(3, 'muriduser', 'murid@example.com', '$2y$10$WPjEoWNqi2qv2sRKLh/oT.F6PWZLdg7bh51NH0TzKMSo/.iASJHC2', 3, '2025-05-05 11:08:55', '2025-05-05 11:08:55');
