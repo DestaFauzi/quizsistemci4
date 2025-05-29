@@ -345,6 +345,12 @@
                 </a>
             </li>
         </ul>
+        <div class="sidebar-footer">
+            <a href="/logout" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </a>
+        </div>
     </aside>
 
     <main class="main-content">
