@@ -64,6 +64,18 @@ class AdminController extends Controller
         $materi = $materiModel->findAll();
         return view('admin/kelola_materi', ['materi' => $materi]);
     }
+    // Fungsi untuk edit materi berdasarkan ID
+    public function editMateri($id)
+    {
+        $materiModel = new MateriModel();
+        $materi = $materiModel->find($id);
+
+        if (!$materi) {
+            return redirect()->to('/admin/kelolaMateri')->with('error', 'Materi tidak ditemukan!');
+        }
+
+        return view('admin/edit_materi', ['materi' => $materi]);
+    }
 
     // Fungsi untuk mengelola quiz
     public function kelolaQuiz()

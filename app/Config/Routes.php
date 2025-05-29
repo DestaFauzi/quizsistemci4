@@ -17,6 +17,9 @@ $routes->get('/admin/kelolaKelas', 'AdminController::kelolaKelas');
 $routes->get('/admin/kelolaMateri', 'AdminController::kelolaMateri');
 $routes->get('/admin/kelolaQuiz', 'AdminController::kelolaQuiz');
 $routes->get('/admin/kelolaPengguna', 'AdminController::kelolaPengguna');
+$routes->get('/lihatmateri/(:num)', 'AdminController::lihatMateri/$1');
+// Routes untuk edit materi
+$routes->get('/admin/editMateri/(:num)', 'AdminController::editMateri/$1');
 
 // Routes untuk menghapus materi, quiz, dan pengguna
 $routes->get('/admin/hapusMateri/(:num)', 'AdminController::hapusMateri/$1');
