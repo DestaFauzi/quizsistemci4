@@ -26,6 +26,9 @@ class AddTableDetailGuru extends Migration
                 'type' => 'VARCHAR',
                 'constraint' => 50,
             ],
+            'alamat' => [
+                'type' => 'TEXT',
+            ],
             
             'created_at' => [
                 'type' => 'DATETIME',

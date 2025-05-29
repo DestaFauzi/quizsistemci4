@@ -3,16 +3,22 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use App\Model\Role;
 
 class DetailMurid extends Model
 {
-    protected $table            = 'detailmurids';
+    protected $table            = 'detail_murid';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = [];
+    protected $allowedFields    = ['murid_id', 'nama_murid', 'nis', 'alamat', 'jurusan', 'kelas'];
+    // Model configuration
+    protected bool $useTimestamps = true;
+    protected $dateFormat      = 'datetime';
+    protected $createdField    = 'created_at';
+    protected $updatedField    = 'updated_at';
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -20,13 +26,8 @@ class DetailMurid extends Model
     protected array $casts = [];
     protected array $castHandlers = [];
 
-    // Dates
-    protected $useTimestamps = false;
-    protected $dateFormat    = 'datetime';
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
-    protected $deletedField  = 'deleted_at';
-
+    // Buat agar detail murid itu isinya user yang memiliki role murid
+    protected $allowedRoles = ['murid'];
     // Validation
     protected $validationRules      = [];
     protected $validationMessages   = [];

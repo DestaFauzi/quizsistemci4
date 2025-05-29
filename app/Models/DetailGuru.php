@@ -6,13 +6,13 @@ use CodeIgniter\Model;
 
 class DetailGuru extends Model
 {
-    protected $table            = 'detailgurus';
+    protected $table            = 'detail_guru';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = [];
+    protected $allowedFields    = ['guru_id', 'nama_guru', 'nip', 'alamat'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
