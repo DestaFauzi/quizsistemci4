@@ -1,26 +1,36 @@
--- --------------------------------------------------------
--- Host:                         127.0.0.1
--- Server version:               8.4.3 - MySQL Community Server - GPL
--- Server OS:                    Win64
--- HeidiSQL Version:             12.8.0.6908
--- --------------------------------------------------------
+CREATE TABLE  `roles` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `role_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET NAMES utf8 */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+-- Dumping data for table lmsci.roles: ~6 rows (approximately)
+INSERT IGNORE INTO `roles` (`id`, `role_name`) VALUES
+	(1, 'admin'),
+	(2, 'guru'),
+	(3, 'murid'),
+	(4, 'admin'),
+	(5, 'guru'),
+	(6, 'murid');
 
+CREATE TABLE  `users` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `password` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `role_id` int unsigned NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`),
+  KEY `users_role_id_foreign` (`role_id`),
+  CONSTRAINT `users_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Dumping database structure for lmsci
-CREATE DATABASE IF NOT EXISTS `lmsci` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `lmsci`;
 
 -- Dumping structure for table lmsci.badge
-CREATE TABLE IF NOT EXISTS `badge` (
+CREATE TABLE `badge` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `murid_id` int unsigned NOT NULL,
   `badge_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -32,10 +42,8 @@ CREATE TABLE IF NOT EXISTS `badge` (
   CONSTRAINT `badge_murid_id_foreign` FOREIGN KEY (`murid_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Dumping data for table lmsci.badge: ~0 rows (approximately)
-
 -- Dumping structure for table lmsci.kelas
-CREATE TABLE IF NOT EXISTS `kelas` (
+CREATE TABLE `kelas` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `nama_kelas` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `deskripsi` text COLLATE utf8mb4_general_ci NOT NULL,
@@ -58,7 +66,7 @@ INSERT IGNORE INTO `kelas` (`id`, `nama_kelas`, `deskripsi`, `status`, `guru_id`
 	(6, 'Kelas 9 SMK', 'ini kelas', 'aktif', 2, '0000-00-00 00:00:00', '0000-00-00 00:00:00');
 
 -- Dumping structure for table lmsci.kelas_siswa
-CREATE TABLE IF NOT EXISTS `kelas_siswa` (
+CREATE TABLE `kelas_siswa` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `kelas_id` int unsigned NOT NULL,
   `murid_id` int unsigned NOT NULL,
@@ -82,7 +90,7 @@ INSERT IGNORE INTO `kelas_siswa` (`id`, `kelas_id`, `murid_id`, `status`, `statu
 	(9, 6, 3, '', 'belum_diakses', 'belum_dikerjakan', '2025-05-09 04:29:37', '2025-05-09 04:29:37');
 
 -- Dumping structure for table lmsci.materi
-CREATE TABLE IF NOT EXISTS `materi` (
+CREATE TABLE  `materi` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `kelas_id` int unsigned NOT NULL,
   `judul` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -115,7 +123,7 @@ INSERT IGNORE INTO `materi` (`id`, `kelas_id`, `judul`, `file_name`, `file_path`
 	(20, 6, 'Materi 2', 'Formulir pengajuan magang 2025 wesclic.pdf', 'uploads/materi/kelas_6/Formulir pengajuan magang 2025 wesclic.pdf', 2, '0000-00-00 00:00:00', '0000-00-00 00:00:00');
 
 -- Dumping structure for table lmsci.migrations
-CREATE TABLE IF NOT EXISTS `migrations` (
+CREATE TABLE  `migrations` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `version` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `class` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -143,7 +151,7 @@ INSERT IGNORE INTO `migrations` (`id`, `version`, `class`, `group`, `namespace`,
 	(13, '2025-05-06-112123', 'App\\Database\\Migrations\\CreateQuizResultsTable', 'default', 'App', 1746530867, 8);
 
 -- Dumping structure for table lmsci.quiz
-CREATE TABLE IF NOT EXISTS `quiz` (
+CREATE TABLE  `quiz` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `kelas_id` int unsigned NOT NULL,
   `judul_quiz` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -177,7 +185,7 @@ INSERT IGNORE INTO `quiz` (`id`, `kelas_id`, `judul_quiz`, `jumlah_soal`, `waktu
 	(29, 6, 'Quiz 2', 2, 3, 2, '0000-00-00 00:00:00', '0000-00-00 00:00:00');
 
 -- Dumping structure for table lmsci.quiz_answers
-CREATE TABLE IF NOT EXISTS `quiz_answers` (
+CREATE TABLE  `quiz_answers` (
   `id` int NOT NULL AUTO_INCREMENT,
   `quiz_id` int NOT NULL,
   `murid_id` int NOT NULL,
@@ -214,7 +222,7 @@ INSERT IGNORE INTO `quiz_answers` (`id`, `quiz_id`, `murid_id`, `kelas_id`, `soa
 	(20, 23, 3, 0, 39, 'A', 0, '2025-05-06 12:19:44', '2025-05-06 12:19:44');
 
 -- Dumping structure for table lmsci.quiz_results
-CREATE TABLE IF NOT EXISTS `quiz_results` (
+CREATE TABLE  `quiz_results` (
   `id` int NOT NULL AUTO_INCREMENT,
   `quiz_id` int NOT NULL,
   `murid_id` int NOT NULL,
@@ -239,23 +247,10 @@ INSERT IGNORE INTO `quiz_results` (`id`, `quiz_id`, `murid_id`, `kelas_id`, `sco
 	(10, 23, 3, 0, 0, '2025-05-06 12:19:44', '2025-05-06 12:19:44');
 
 -- Dumping structure for table lmsci.roles
-CREATE TABLE IF NOT EXISTS `roles` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `role_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Dumping data for table lmsci.roles: ~6 rows (approximately)
-INSERT IGNORE INTO `roles` (`id`, `role_name`) VALUES
-	(1, 'admin'),
-	(2, 'guru'),
-	(3, 'murid'),
-	(4, 'admin'),
-	(5, 'guru'),
-	(6, 'murid');
 
 -- Dumping structure for table lmsci.soal
-CREATE TABLE IF NOT EXISTS `soal` (
+CREATE TABLE  `soal` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `quiz_id` int unsigned NOT NULL,
   `soal` text COLLATE utf8mb4_general_ci NOT NULL,
@@ -311,29 +306,9 @@ INSERT IGNORE INTO `soal` (`id`, `quiz_id`, `soal`, `jawaban_a`, `jawaban_b`, `j
 	(53, 29, 'mljbkds', 'knl', 'nln', 'lln', 'nkn', 'c', 20, '0000-00-00 00:00:00', '0000-00-00 00:00:00');
 
 -- Dumping structure for table lmsci.users
-CREATE TABLE IF NOT EXISTS `users` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `username` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `role_id` int unsigned NOT NULL,
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `username` (`username`),
-  UNIQUE KEY `email` (`email`),
-  KEY `users_role_id_foreign` (`role_id`),
-  CONSTRAINT `users_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table lmsci.users: ~3 rows (approximately)
 INSERT IGNORE INTO `users` (`id`, `username`, `email`, `password`, `role_id`, `created_at`, `updated_at`) VALUES
 	(1, 'adminuser', 'admin@example.com', '$2y$10$ca76lqTJeqhsFRdUMJWh2uIO0Gb9TYde3JP30i7/Ov3oY3qdOuvKK', 1, '2025-05-05 11:08:55', '2025-05-05 11:08:55'),
 	(2, 'guruuser', 'guru@example.com', '$2y$10$D2mL09ypU4Y9BVv8eWTte.sguELn4Tlx0AxJs5txtCGVdQmsYbEAa', 2, '2025-05-05 11:08:55', '2025-05-05 11:08:55'),
 	(3, 'muriduser', 'murid@example.com', '$2y$10$WPjEoWNqi2qv2sRKLh/oT.F6PWZLdg7bh51NH0TzKMSo/.iASJHC2', 3, '2025-05-05 11:08:55', '2025-05-05 11:08:55');
-
-/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
-/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
-/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
