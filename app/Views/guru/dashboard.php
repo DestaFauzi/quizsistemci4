@@ -456,7 +456,7 @@
                 </a>
 
                 <div class="sidebar-footer">
-                    <a href="/logouts">
+                    <a href="/logout">
                         <button class="logout-btn">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Keluar</span>
