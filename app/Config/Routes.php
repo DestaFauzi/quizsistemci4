@@ -13,6 +13,15 @@ $routes->get('logout', 'AuthController::logout');
 
 // Routes untuk Admin
 $routes->get('admin/dashboard', 'AdminController::dashboard');
+$routes->get('/admin/kelolaKelas', 'AdminController::kelolaKelas');
+$routes->get('/admin/kelolaMateri', 'AdminController::kelolaMateri');
+$routes->get('/admin/kelolaQuiz', 'AdminController::kelolaQuiz');
+$routes->get('/admin/kelolaPengguna', 'AdminController::kelolaPengguna');
+
+// Routes untuk menghapus materi, quiz, dan pengguna
+$routes->get('/admin/hapusMateri/(:num)', 'AdminController::hapusMateri/$1');
+$routes->get('/admin/hapusQuiz/(:num)', 'AdminController::hapusQuiz/$1');
+$routes->get('/admin/hapusPengguna/(:num)', 'AdminController::hapusPengguna/$1');
 
 // ROUTES GURU
 // Routes untuk menuju dashboard guru
