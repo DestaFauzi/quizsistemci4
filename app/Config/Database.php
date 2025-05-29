@@ -26,10 +26,10 @@ class Database extends Config
      */
     public array $default = [
         'DSN'          => '',
-        'hostname'     => 'localhost',
-        'username'     => 'root',
-        'password'     => '',
-        'database'     => 'lmsci',
+        'hostname'     => 'dirgantara.arenhost.com',
+        'username'     => 'arsenicp_bahasakita',
+        'password'     => 'p2WZB2qxk_sVF@2',
+        'database'     => 'arsenicp_bahasakita',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
         'pConnect'     => false,
