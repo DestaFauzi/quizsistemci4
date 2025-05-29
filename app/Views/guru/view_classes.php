@@ -306,6 +306,12 @@
                                         <a href="/guru/addQuiz/<?= $kelasItem['id'] ?>" class="action-btn quiz-btn">
                                             <i class="fas fa-question-circle"></i> Quiz
                                         </a>
+                                        <a href="/guru/viewLeaderboard/<?= $kelasItem['id'] ?>" class="action-btn leaderboard-btn">
+                                            <i class="fas fa-trophy"></i> Leaderboard
+                                        </a>
+                                        <a href="/guru/viewlistmurid/<?= $kelasItem['id'] ?>" class="action-btn list-btn">
+                                            <i class="fas fa-users"></i> List Murid
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
