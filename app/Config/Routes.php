@@ -101,3 +101,4 @@ $routes->post('/murid/selesaikanMateri/(:segment)/(:segment)', 'MuridController:
 $routes->get('/murid/aksesQuiz/(:num)', 'MuridController::aksesQuiz/$1');
 $routes->post('/murid/submitQuiz/(:segment)/(:segment)', 'MuridController::submitQuiz/$1/$2');
 $routes->get('/murid/leaderboard/(:segment)', 'MuridController::leaderboard/$1');
+    
