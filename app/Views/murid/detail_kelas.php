@@ -314,7 +314,7 @@
                                         </p>
                                     <?php elseif ($item['level'] == 1 || ($item['level'] > 1 && $status['level'] >= $item['level'])): ?>
                                         <a href="<?= base_url($item['file_path']) ?>" target="_blank" class="view-btn">
-                                            <i class="fas fa-eye"></i> Lihat Materi
+                                            <i class="fas fa-eye"></i> Lihat Materi Ini
                                         </a>
                                     <?php else: ?>
                                         <p class="locked-message">
