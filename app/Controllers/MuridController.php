@@ -571,61 +571,61 @@ class MuridController extends Controller
     }
 
 
-    public function submitQuiz($kelasId, $quizId)
-    {
-        $quizModel = new QuizModel();
-        $soalModel = new SoalModel();
-        $quizResultsModel = new QuizResultsModel();
-        $kelasSiswaModel = new KelasSiswaModel();
+    // public function submitQuiz($kelasId, $quizId)
+    // {
+    //     $quizModel = new QuizModel();
+    //     $soalModel = new SoalModel();
+    //     $quizResultsModel = new QuizResultsModel();
+    //     $kelasSiswaModel = new KelasSiswaModel();
 
-        $userId = session()->get('user_id');
-        $quiz = $quizModel->find($quizId);
+    //     $userId = session()->get('user_id');
+    //     $quiz = $quizModel->find($quizId);
 
-        // Validasi
-        if (!$quiz || $quiz['kelas_id'] != $kelasId) {
-            return redirect()->back()->with('error', 'Quiz tidak valid');
-        }
+    //     // Validasi
+    //     if (!$quiz || $quiz['kelas_id'] != $kelasId) {
+    //         return redirect()->back()->with('error', 'Quiz tidak valid');
+    //     }
 
-        // Proses jawaban quiz
-        $jawaban = $this->request->getPost('jawaban');
-        $soalQuiz = $soalModel->where('quiz_id', $quizId)->findAll();
+    //     // Proses jawaban quiz
+    //     $jawaban = $this->request->getPost('jawaban');
+    //     $soalQuiz = $soalModel->where('quiz_id', $quizId)->findAll();
 
-        $score = 0;
-        foreach ($soalQuiz as $soal) {
-            if (isset($jawaban[$soal['id']])) {
-                if ($jawaban[$soal['id']] == $soal['jawaban_benar']) {
-                    $score += $soal['poin'];
-                }
-            }
-        }
+    //     $score = 0;
+    //     foreach ($soalQuiz as $soal) {
+    //         if (isset($jawaban[$soal['id']])) {
+    //             if ($jawaban[$soal['id']] == $soal['jawaban_benar']) {
+    //                 $score += $soal['poin'];
+    //             }
+    //         }
+    //     }
 
-        // Simpan hasil quiz
-        $quizResultsModel->insert([
-            'quiz_id' => $quizId,
-            'murid_id' => $userId,
-            'kelas_id' => $kelasId,
-            'score' => $score,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
+    //     // Simpan hasil quiz
+    //     $quizResultsModel->insert([
+    //         'quiz_id' => $quizId,
+    //         'murid_id' => $userId,
+    //         'kelas_id' => $kelasId,
+    //         'score' => $score,
+    //         'created_at' => date('Y-m-d H:i:s'),
+    //         'updated_at' => date('Y-m-d H:i:s')
+    //     ]);
 
-        // Jika quiz level 1, update status_quiz
-        if ($quiz['level'] == 1) {
-            $kelasSiswaModel->where('kelas_id', $kelasId)
-                ->where('murid_id', $userId)
-                ->set([
-                    'status_quiz' => 'selesai',
-                    'updated_at' => date('Y-m-d H:i:s')
-                ])
-                ->update();
-        }
+    //     // Jika quiz level 1, update status_quiz
+    //     if ($quiz['level'] == 1) {
+    //         $kelasSiswaModel->where('kelas_id', $kelasId)
+    //             ->where('murid_id', $userId)
+    //             ->set([
+    //                 'status_quiz' => 'selesai',
+    //                 'updated_at' => date('Y-m-d H:i:s')
+    //             ])
+    //             ->update();
+    //     }
 
-        // Cek apakah ini quiz terakhir untuk naik level
-        $this->checkLevelCompletion($userId, $kelasId);
+    //     // Cek apakah ini quiz terakhir untuk naik level
+    //     $this->checkLevelCompletion($userId, $kelasId);
 
-        return redirect()->to("/murid/detailKelas/$kelasId")
-            ->with('success', 'Quiz berhasil diselesaikan! Skor: ' . $score);
-    }
+    //     return redirect()->to("/murid/detailKelas/$kelasId")
+    //         ->with('success', 'Quiz berhasil diselesaikan! Skor: ' . $score);
+    // }
 
     private function checkLevelCompletion($userId, $kelasId)
     {
@@ -664,39 +664,95 @@ class MuridController extends Controller
             ]);
         }
     }
-
-
+    // Fungsi untuk mengakses quiz
     public function aksesQuiz($quizId)
     {
         $quizModel = new QuizModel();
         $soalModel = new SoalModel();
         $kelasSiswaModel = new KelasSiswaModel();
+        $kelasModel = new KelasModel();
 
         $muridId = session()->get('user_id');
         $quiz = $quizModel->find($quizId);
-        $kelasId = $quiz['kelas_id'];
+        $kelas = $kelasModel->find($quiz['kelas_id']);
+        // $kelasId = $quiz['kelas_id'];
         $level = $quiz['level'];
 
         // Validasi apakah materi level sebelumnya sudah diakses
         $materiModel = new MateriModel();
-        $prevMateri = $materiModel->where('kelas_id', $kelasId)
+        $prevMateri = $materiModel->where('kelas_id', $kelas['id'])
             ->where('level', $level - 1)
             ->first();
 
-        $kelasSiswa = $kelasSiswaModel->where('kelas_id', $kelasId)
+        $kelasSiswa = $kelasSiswaModel->where('kelas_id', $kelas['id'])
             ->where('murid_id', $muridId)
             ->first();
 
-        if ($prevMateri && $kelasSiswa['status_materi'] != 'selesai') {
+        if ($prevMateri && ($kelasSiswa['status_materi'] != 'selesai' || !$kelasSiswa)) {
             return redirect()->back()->with('error', 'Anda harus menyelesaikan materi level sebelumnya.');
         }
 
         // Ambil soal quiz
         $soals = $soalModel->where('quiz_id', $quizId)->findAll();
 
-        return view('murid/akses_quiz', ['quiz' => $quiz, 'soals' => $soals, 'kelasId' => $kelasId]);
+        return view('murid/akses_quiz', ['quiz' => $quiz, 'soals' => $soals, 'kelasId' => $kelas['id']]);
     }
+    // function untuk submit jawaban quiz
+    public function submitQuiz($kelasId, $quizId)
+    {
+        $quizModel = new QuizModel();
+        $soalModel = new SoalModel();
+        $quizResultsModel = new QuizResultsModel();
+        $kelasSiswaModel = new KelasSiswaModel();
 
+        $userId = session()->get('user_id');
+        $quiz = $quizModel->find($quizId);
+
+        // Validasi
+        if (!$quiz || $quiz['kelas_id'] != $kelasId) {
+            return redirect()->back()->with('error', 'Quiz tidak valid');
+        }
+
+        // Proses jawaban quiz
+        $jawaban = $this->request->getPost('jawaban');
+        $soalQuiz = $soalModel->where('quiz_id', $quizId)->findAll();
+
+        $score = 0;
+        foreach ($soalQuiz as $soal) {
+            if (isset($jawaban[$soal['id']])) {
+                if ($jawaban[$soal['id']] == $soal['jawaban_benar']) {
+                    $score += $soal['poin'];
+                }
+            }
+        }
+
+        // Simpan hasil quiz
+        $quizResultsModel->insert([
+            'quiz_id' => $quizId,
+            'murid_id' => $userId,
+            'kelas_id' => $kelasId,
+            'score' => $score,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+
+        // Update status quiz
+        if ($quiz['level'] == 1) {
+            $kelasSiswaModel->where('kelas_id', $kelasId)
+                ->where('murid_id', $userId)
+                ->set([
+                    'status_quiz' => 'selesai',
+                    'updated_at' => date('Y-m-d H:i:s')
+                ])
+                ->update();
+        }
+
+        // Cek apakah ini quiz terakhir untuk naik level
+        $this->checkLevelCompletion($userId, $kelasId);
+
+        return redirect()->to("/murid/detailKelas/$kelasId")
+            ->with('success', 'Quiz berhasil diselesaikan! Skor: ' . $score);
+    }
 
 
     // private function checkNextLevel($kelasId, $muridId, $quizId)

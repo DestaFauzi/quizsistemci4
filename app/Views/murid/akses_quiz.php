@@ -215,7 +215,7 @@
             <p class="time-warning" id="time-warning">Waktu hampir habis! Segera selesaikan quiz.</p>
         </div>
 
-        <form method="post" action="<?= site_url('/murid/submitQuiz/' . $kelas['id'] . '/' . $quiz['id']) ?>" class="quiz-form" id="quizForm">
+        <form action="<?= base_url('murid/submitQuiz/' . $kelasId . '/' . $quiz['id']) ?>" method="post">
             <?= csrf_field() ?>
 
             <?php foreach ($soals as $index => $soal): ?>

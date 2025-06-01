@@ -96,6 +96,8 @@ $routes->get('/murid/selesaikanKelas/(:num)', 'MuridController::selesaikanKelas/
 $routes->get('/murid/aksesKelas/(:segment)', 'MuridController::aksesKelas/$1');
 $routes->get('/murid/masukKelas/(:segment)', 'MuridController::masukKelas/$1');
 $routes->get('/murid/aksesMateri/(:segment)/(:segment)', 'MuridController::aksesMateri/$1/$2');
-$routes->get('/murid/aksesQuiz/(:num)/(:num)', 'MuridController::aksesQuiz/$1/$2');
-$routes->get('/murid/submitQuiz/(:segment)/(:segment)', 'MuridController::submitQuiz/$1/$2');
+//routes selesaikan materi
+$routes->post('/murid/selesaikanMateri/(:segment)/(:segment)', 'MuridController::selesaikanMateri/$1/$2');
+$routes->get('/murid/aksesQuiz/(:num)', 'MuridController::aksesQuiz/$1');
+$routes->post('/murid/submitQuiz/(:segment)/(:segment)', 'MuridController::submitQuiz/$1/$2');
 $routes->get('/murid/leaderboard/(:segment)', 'MuridController::leaderboard/$1');

@@ -296,7 +296,7 @@
                                     <a href="<?= base_url($item['file_path']) ?>" target="_blank" class="view-btn">
                                         <i class="fas fa-eye"></i> Lihat Materi
                                     </a>
-                                    <form action="<?= site_url("murid/selesaikanMateri/{$kelas['id']}/{$item['id']}") ?>" method="post" style="display: inline;">
+                                    <form action="/murid/selesaikanMateri/<?= esc($kelas['id']) ?>/<?= esc($item['id']) ?>" method="post" style="display: inline;">
                                         <button type="submit" class="done-btn">
                                             <i class="fas fa-check-circle"></i> Selesai Baca
                                         </button>
