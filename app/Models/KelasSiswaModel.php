@@ -8,7 +8,7 @@ class KelasSiswaModel extends Model
 {
     protected $table = 'kelas_siswa';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['kelas_id', 'murid_id', 'status', 'status_materi', 'status_quiz'];
+    protected $allowedFields = ['kelas_id', 'murid_id', 'status', 'status_materi', 'status_quiz', 'created_at', 'updated_at','level',];
     protected $useTimestamps = true;
 
     // Menambahkan fungsi untuk mendapatkan kelas berdasarkan murid

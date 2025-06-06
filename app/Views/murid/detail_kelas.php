@@ -279,7 +279,7 @@
                 <span class="status-badge status-not-started">
                     <i class="fas fa-hourglass-start"></i> Belum Dimulai
                 </span>
-            <?php elseif ($status['status'] == 'dalam_proses'): ?>
+            <?php elseif ($status['status'] == 'proses'): ?>
                 <span class="status-badge status-in-progress">
                     <i class="fas fa-spinner"></i> Dalam Proses (Level <?= $status['level'] ?>)
                 </span>

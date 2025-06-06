@@ -223,19 +223,19 @@
                     <p class="question-text"><?= ($index + 1) ?>. <?= esc($soal['soal']) ?></p>
                     <div class="options-container">
                         <label class="option-label">
-                            <input type="radio" class="option-radio" name="jawaban_<?= esc($soal['id']) ?>" value="A">
+                            <input type="radio" class="option-radio" name="jawaban_pilih[<?= esc($soal['id']) ?>]" value="a">
                             <span><?= esc($soal['jawaban_a']) ?></span>
                         </label>
                         <label class="option-label">
-                            <input type="radio" class="option-radio" name="jawaban_<?= esc($soal['id']) ?>" value="B">
+                            <input type="radio" class="option-radio" name="jawaban_pilih[<?= esc($soal['id']) ?>]" value="b">
                             <span><?= esc($soal['jawaban_b']) ?></span>
                         </label>
                         <label class="option-label">
-                            <input type="radio" class="option-radio" name="jawaban_<?= esc($soal['id']) ?>" value="C">
+                            <input type="radio" class="option-radio" name="jawaban_pilih[<?= esc($soal['id']) ?>]" value="c">
                             <span><?= esc($soal['jawaban_c']) ?></span>
                         </label>
                         <label class="option-label">
-                            <input type="radio" class="option-radio" name="jawaban_<?= esc($soal['id']) ?>" value="D">
+                            <input type="radio" class="option-radio" name="jawaban_pilih[<?= esc($soal['id']) ?>]" value="d">
                             <span><?= esc($soal['jawaban_d']) ?></span>
                         </label>
                     </div>

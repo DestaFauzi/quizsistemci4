@@ -203,6 +203,14 @@
         <div class="header">
             <h1>Detail Kelas: <?= esc($kelas['nama_kelas']) ?></h1>
             <p class="class-description"><strong>Deskripsi:</strong> <?= esc($kelas['deskripsi']) ?></p>
+            <p class="class-description"><strong>Status:</strong> 
+                <?php if ($kelas['status'] == 'aktif'): ?>
+                    <span style="color: var(--success);">Aktif</span>
+                <?php else: ?>
+                    <span style="color: var(--warning);">Non-Aktif</span>
+                <?php endif; ?>
+            </p>
+            <p class="class-description"><strong>Jumlah Level:</strong> <?= esc($kelas['jumlah_level']) ?></p>
         </div>
 
         <h2><i class="fas fa-book-open"></i> Materi Pembelajaran</h2>
@@ -217,12 +225,11 @@
                     <div class="card">
                         <h3 class="card-title"><?= esc($item['judul']) ?></h3>
                         <div class="card-detail">
-                            <i class="fas fa-file-alt"></i>
-                            <a href="<?= base_url($item['file_path']) ?>" target="_blank">Lihat Materi</a>
                         </div>
                         <div class="card-detail">
                             <i class="fas fa-chart-line"></i>
                             <span>Level: <span class="level-badge"><?= esc($item['level']) ?></span></span>
+                            <span style="margin-left: 10px;">Point: <?= esc($item['point']) ?></span>
                         </div>
                         <div class="card-actions">
                             <a href="<?= base_url($item['file_path']) ?>" target="_blank" class="btn btn-primary">
@@ -251,6 +258,7 @@
                         <div class="card-detail">
                             <i class="fas fa-list-ol"></i>
                             <span>Jumlah Soal: <?= esc($item['jumlah_soal']) ?></span>
+                            <span style="margin-left: 10px;">Level: <span class="level-badge"><?= esc($item['level']) ?></span></span>
                         </div>
                         <div class="card-detail">
                             <i class="fas fa-clock"></i>

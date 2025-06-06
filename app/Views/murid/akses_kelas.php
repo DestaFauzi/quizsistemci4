@@ -275,6 +275,8 @@
         <div class="header">
             <h1 class="class-title"><?= esc($kelas['nama_kelas']) ?></h1>
             <p class="class-description"><?= esc($kelas['deskripsi']) ?></p>
+            <p class="class-description">
+                <strong>Jumlah Level:</strong> <?= esc($kelas['jumlah_level']) ?>
         </div>
 
         <div class="content-section">
@@ -327,6 +329,12 @@
                 </div>
 
                 <div class="quiz-list">
+                    <?php
+                    $quizSelesai = [];
+                    foreach ($quiz as $item) {
+                        $quizSelesai[$item['level']] = (isset($item['status_quiz']) && $item['status_quiz'] == 'selesai');
+                    }
+                    ?>
                     <?php foreach ($quiz as $item): ?>
                         <div class="item-card">
                             <div class="item-header">
@@ -335,11 +343,17 @@
                             </div>
 
                             <div class="item-action">
-                                <?php if ($item['level'] > 1 && $status_quiz_level_1 == 'selesai'): ?>
-                                    <a href="<?= base_url('/murid/aksesQuiz/' . esc($item['id'])) ?>" class="view-btn">
-                                        <i class="fas fa-play"></i> Kerjakan Quiz
-                                    </a>
-                                <?php elseif ($item['level'] == 1): ?>
+                                <?php
+                                $level = $item['level'];
+                                $prevLevel = $level - 1;
+                                $isSelesai = isset($item['status_quiz']) && $item['status_quiz'] == 'selesai';
+                                $prevSelesai = ($level == 1) ? true : (!empty($quizSelesai[$prevLevel]));
+                                ?>
+                                <?php if ($isSelesai): ?>
+                                    <button class="done-btn" disabled>
+                                        <i class="fas fa-check-circle"></i> Quiz ini selesai
+                                    </button>
+                                <?php elseif ($prevSelesai): ?>
                                     <a href="<?= base_url('/murid/aksesQuiz/' . esc($item['id'])) ?>" class="view-btn">
                                         <i class="fas fa-play"></i> Kerjakan Quiz
                                     </a>

@@ -12,7 +12,7 @@ class MateriModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['kelas_id', 'judul', 'file_name', 'file_path', 'level'];
+    protected $allowedFields    = ['kelas_id', 'judul', 'file_name', 'file_path', 'level', 'point'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

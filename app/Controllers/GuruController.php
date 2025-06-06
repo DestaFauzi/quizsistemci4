@@ -38,6 +38,7 @@ class GuruController extends Controller
             'nama_kelas' => $this->request->getPost('nama_kelas'),
             'deskripsi' => $this->request->getPost('deskripsi'),
             'status' => $this->request->getPost('status'),
+            'jumlah_level' => $this->request->getPost('jumlah_level'),
             'guru_id' => session()->get('user_id'),
         ];
 

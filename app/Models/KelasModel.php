@@ -12,7 +12,7 @@ class KelasModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id', 'nama_kelas', 'deskripsi', 'status', 'guru_id'];
+    protected $allowedFields    = ['id', 'nama_kelas', 'deskripsi', 'status', 'guru_id', 'jumlah_level'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

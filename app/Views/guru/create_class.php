@@ -124,6 +124,10 @@
                 <label for="deskripsi">Deskripsi</label>
                 <textarea name="deskripsi" id="deskripsi" rows="4" required placeholder="Tambahkan deskripsi kelas"></textarea>
             </div>
+            <div class="form-group">
+                <label for="jumlah_level">Jumlah Level</label>
+                <input type="text" name="jumlah_level" id="jumlah_level" required placeholder="Masukkan Jumlah Level">
+            </div>
 
             <div class="form-group">
                 <label for="status">Status</label>

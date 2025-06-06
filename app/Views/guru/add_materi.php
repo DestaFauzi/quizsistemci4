@@ -189,6 +189,10 @@
                     <label for="level">Level:</label>
                     <input type="number" name="level" id="level" min="1" required>
                 </div>
+                <div class="form-group">
+                    <label for="point">Point:</label>
+                    <input type="number" name="point" id="point" min="0" required>
+                </div>
 
                 <div class="action-buttons">
                     <button type="submit" class="button button-primary">Unggah Materi</button>
