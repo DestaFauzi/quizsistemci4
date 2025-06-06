@@ -377,11 +377,11 @@
                 <a href="<?= site_url('murid/masukKelas/' . $kelas['id']) ?>" class="primary-btn">
                     Mulai Belajar <i class="fas fa-arrow-right"></i>
                 </a>
-            <?php elseif ($status['status'] == 'dalam_proses'): ?>
+            <?php elseif ($status['status'] == 'proses'): ?>
                 <a href="<?= site_url('murid/lanjutkanKelas/' . $kelas['id']) ?>" class="primary-btn">
                     Lanjutkan Belajar <i class="fas fa-arrow-right"></i>
                 </a>
-            <?php else: ?>
+            <?php elseif ($status['status'] == 'selesai'):?>
                 <a href="<?= site_url('murid/reviewKelas/' . $kelas['id']) ?>" class="primary-btn">
                     <i class="fas fa-redo"></i> Review Kelas
                 </a>
