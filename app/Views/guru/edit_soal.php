@@ -63,64 +63,65 @@
                 <div class="form-container">
                     <h1>Tambah Soal untuk Quiz</h1>
 
-                    <!-- Form untuk menambah soal -->
-                    <form action="<?= site_url('/guru/saveSoal') ?>" method="POST">
+                    <form action="<?= site_url('guru/updateSoal') ?>" method="POST">
                         <input type="hidden" name="quiz_id" value="<?= esc($quiz_id) ?>">
                         <input type="hidden" name="jumlah_soal" value="<?= esc($jumlah_soal) ?>">
 
-                        <?php for ($i = 1; $i <= $jumlah_soal; $i++): ?>
+                        <?php for ($i = 0; $i < $jumlah_soal; $i++):
+                            $soal = $soalList[$i] ?? ['id' => '', 'soal' => '', 'jawaban_a' => '', 'jawaban_b' => '', 'jawaban_c' => '', 'jawaban_d' => '', 'jawaban_benar' => '', 'poin' => ''];
+                        ?>
                             <div class="question-card">
-                                <div class="question-number">Soal <?= $i ?></div>
+                                <div class="question-number">Soal <?= $i + 1 ?></div>
+
+                                <input type="hidden" name="soal_id[]" value="<?= esc($soal['id']) ?>">
 
                                 <div class="mb-3">
                                     <label for="soal_<?= $i ?>" class="form-label">Pertanyaan:</label>
-                                    <textarea class="form-control" name="soal_<?= $i ?>" id="soal_<?= $i ?>" rows="3" required></textarea>
+                                    <textarea class="form-control" name="soal[]" id="soal_<?= $i ?>" rows="3" required><?= esc($soal['soal']) ?></textarea>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="jawaban_a_<?= $i ?>" class="form-label">Jawaban A:</label>
-                                        <input type="text" class="form-control" name="jawaban_a_<?= $i ?>" id="jawaban_a_<?= $i ?>" required>
+                                        <input type="text" class="form-control" name="jawaban_a[]" id="jawaban_a_<?= $i ?>" value="<?= esc($soal['jawaban_a']) ?>" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="jawaban_b_<?= $i ?>" class="form-label">Jawaban B:</label>
-                                        <input type="text" class="form-control" name="jawaban_b_<?= $i ?>" id="jawaban_b_<?= $i ?>" required>
+                                        <input type="text" class="form-control" name="jawaban_b[]" id="jawaban_b_<?= $i ?>" value="<?= esc($soal['jawaban_b']) ?>" required>
                                     </div>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="jawaban_c_<?= $i ?>" class="form-label">Jawaban C:</label>
-                                        <input type="text" class="form-control" name="jawaban_c_<?= $i ?>" id="jawaban_c_<?= $i ?>" required>
+                                        <input type="text" class="form-control" name="jawaban_c[]" id="jawaban_c_<?= $i ?>" value="<?= esc($soal['jawaban_c']) ?>" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="jawaban_d_<?= $i ?>" class="form-label">Jawaban D:</label>
-                                        <input type="text" class="form-control" name="jawaban_d_<?= $i ?>" id="jawaban_d_<?= $i ?>" required>
+                                        <input type="text" class="form-control" name="jawaban_d[]" id="jawaban_d_<?= $i ?>" value="<?= esc($soal['jawaban_d']) ?>" required>
                                     </div>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="jawaban_benar_<?= $i ?>" class="form-label">Jawaban Benar:</label>
-                                        <select class="form-select" name="jawaban_benar_<?= $i ?>" id="jawaban_benar_<?= $i ?>" required>
-                                            <option value="a">A</option>
-                                            <option value="b">B</option>
-                                            <option value="c">C</option>
-                                            <option value="d">D</option>
+                                        <select class="form-select" name="jawaban_benar[]" id="jawaban_benar_<?= $i ?>" required>
+                                            <option value="a" <?= $soal['jawaban_benar'] === 'a' ? 'selected' : '' ?>>A</option>
+                                            <option value="b" <?= $soal['jawaban_benar'] === 'b' ? 'selected' : '' ?>>B</option>
+                                            <option value="c" <?= $soal['jawaban_benar'] === 'c' ? 'selected' : '' ?>>C</option>
+                                            <option value="d" <?= $soal['jawaban_benar'] === 'd' ? 'selected' : '' ?>>D</option>
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="poin_<?= $i ?>" class="form-label">Poin:</label>
-                                        <input type="number" class="form-control" name="poin_<?= $i ?>" id="poin_<?= $i ?>" required>
+                                        <input type="number" class="form-control" name="poin[]" id="poin_<?= $i ?>" value="<?= esc($soal['poin']) ?>" required>
                                     </div>
                                 </div>
                             </div>
                         <?php endfor; ?>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="/guru/viewClasses" class="btn btn-secondary me-md-2">
-                                Kembali ke Daftar Kelas
-                            </a>
+                            <a href="/guru/viewClasses" class="btn btn-secondary me-md-2">Kembali ke Daftar Kelas</a>
                             <button type="submit" class="btn btn-primary">Simpan Soal</button>
                         </div>
                     </form>
