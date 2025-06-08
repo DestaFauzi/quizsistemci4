@@ -402,7 +402,6 @@
                                 </div>
                             </div>
                         <?php endforeach; ?>
-
                     <?php endif; ?>
                 </div>
             </div>
@@ -434,7 +433,7 @@
                                                 <i class="fas fa-check-circle"></i> Quiz ini sudah selesai
                                             </p>
                                         <?php else: ?>
-                                            <a href="<?= base_url('murid/viewQuiz/' . esc($item['id'])) ?>" class="view-btn">
+                                            <a href="<?= site_url("/murid/aksesQuiz/{$kelas['id']}/{$item['id']}") ?>" class="view-btn">
                                                 <i class="fas fa-play"></i> Kerjakan Quiz
                                             </a>
                                         <?php endif; ?>
