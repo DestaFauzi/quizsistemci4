@@ -502,6 +502,18 @@ class MuridController extends Controller
                     'status' => 'belum_diakses',
                 ]);
             }
+        } else {
+            $kelasSiswaModel = new KelasSiswaModel();
+            $kelasSiswa = $kelasSiswaModel
+                ->where('kelas_id', $kelasId)
+                ->where('murid_id', $muridId)
+                ->first();
+
+            if ($kelasSiswa) {
+                $kelasSiswaModel
+                    ->where('id', $kelasSiswa['id'])
+                    ->update(null, ['status_materi' => 'selesai']);
+            }
         }
 
         return redirect()->to("/murid/detailKelas/{$kelasId}")->with('success', 'Materi berhasil diselesaikan!');
