@@ -178,6 +178,7 @@ class MuridController extends Controller
         ];
         $badgeModel->addBadge($badgeData);
     }
+
     public function detailKelas($kelas_id)
     {
         // Load models
@@ -212,11 +213,13 @@ class MuridController extends Controller
 
         // Jika sudah terdaftar, update status
         if ($kelasSiswa) {
+            $statusMateriInfo = $this->determineStatusAndLevelMateri($userId, $kelas_id);
+
             $status = [
                 'status' => $kelasSiswa['status'],
-                'status_materi' => $this->determineCurrentStatusMateri($userId, $kelas_id),
+                'status_materi' => $statusMateriInfo['status_materi'],
                 'status_quiz' => $kelasSiswa['status_quiz'],
-                'level_materi' => $this->determineCurrentLevelMateri($userId, $kelas_id),
+                'level_materi' => $statusMateriInfo['level_materi'],
                 'level_quiz' => $this->determineCurrentLevelQuiz($userId, $kelas_id)
             ];
         }
@@ -287,6 +290,56 @@ class MuridController extends Controller
         return view('murid/detail_kelas', $data);
     }
 
+    private function determineStatusAndLevelMateri($muridId, $kelasId)
+    {
+        $materiModel = new MateriModel();
+        $materiSiswaModel = new MateriSiswaModel();
+
+        $materiList = $materiModel
+            ->where('kelas_id', $kelasId)
+            ->orderBy('level', 'asc')
+            ->findAll();
+
+        if (empty($materiList)) {
+            return [
+                'level_materi' => 1,
+                'status_materi' => 'belum_diakses'
+            ];
+        }
+
+        foreach ($materiList as $materi) {
+            $materiSiswa = $materiSiswaModel
+                ->where('materi_id', $materi['id'])
+                ->where('murid_id', $muridId)
+                ->first();
+
+            if (!$materiSiswa) {
+                // Ini materi baru yg belum dibaca
+                return [
+                    'level_materi' => $materi['level'],
+                    'status_materi' => 'belum_diakses'
+                ];
+            }
+
+            if ($materiSiswa['status'] !== 'selesai') {
+                // Sudah dibuka tapi belum selesai
+                return [
+                    'level_materi' => $materi['level'],
+                    'status_materi' => $materiSiswa['status']
+                ];
+            }
+        }
+
+        // semua materi sudah ada di materi_siswa dengan semua status selesai
+        // level aktif nextnya tetap di level terakhir (karena materi sudah habis)
+        $lastLevel = end($materiList)['level'];
+
+        return [
+            'level_materi' => $lastLevel,
+            'status_materi' => 'selesai'
+        ];
+    }
+
     private function determineCurrentLevelQuiz($userId, $kelasId)
     {
         $quizModel = new QuizModel();
@@ -315,35 +368,6 @@ class MuridController extends Controller
         return $currentLevel;
     }
 
-    private function determineCurrentLevelMateri($muridId, $kelasId)
-    {
-        $materiModel = new MateriModel();
-        $materiSiswaModel = new MateriSiswaModel();
-
-        $materiList = $materiModel->where('kelas_id', $kelasId)->findAll();
-        $materiIdToLevel = [];
-        foreach ($materiList as $m) {
-            $materiIdToLevel[$m['id']] = $m['level'];
-        }
-
-        // Ambil materi yang diselesaikan siswa
-        $selesai = $materiSiswaModel->where('murid_id', $muridId)
-            ->where('status', 'selesai')
-            ->findAll();
-
-        $maxLevel = 0;
-        foreach ($selesai as $item) {
-            if (isset($materiIdToLevel[$item['materi_id']])) {
-                $level = $materiIdToLevel[$item['materi_id']];
-                if ($level > $maxLevel) {
-                    $maxLevel = $level;
-                }
-            }
-        }
-
-        return $maxLevel + 1;
-    }
-
     protected function getQuizLevelSiswa($muridId, $kelasId)
     {
         $quizModel = new QuizModel();
@@ -370,39 +394,6 @@ class MuridController extends Controller
         }
 
         return $maxLevel + 1; // level selanjutnya yang bisa diakses
-    }
-
-    private function determineCurrentStatusMateri($muridId, $kelasId)
-    {
-        $materiModel = new MateriModel();
-        $materiSiswaModel = new MateriSiswaModel();
-
-        // ambil ID materi yang ada di kelas ini, beserta level-nya
-        $materiList = $materiModel
-            ->select('id, level')
-            ->where('kelas_id', $kelasId)
-            ->orderBy('level', 'desc') // level tertinggi = level terbaru yg abis dibaca
-            ->findAll();
-
-        if (empty($materiList)) {
-            return 'belum_diakses';
-        }
-
-        // ambil ID materi-materi dari daftar di atas
-        $materiIds = array_column($materiList, 'id');
-
-        // ambil data materi siswa yang udh dibuka murid
-        $materiSiswa = $materiSiswaModel
-            ->whereIn('materi_id', $materiIds)
-            ->where('murid_id', $muridId)
-            ->orderBy('id', 'desc')
-            ->first();
-
-        if (!$materiSiswa) {
-            return 'belum_diakses';
-        }
-
-        return $materiSiswa['status'];
     }
 
     public function masukKelas($id)
