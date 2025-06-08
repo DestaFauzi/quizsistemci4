@@ -132,6 +132,13 @@ class GuruController extends Controller
             'waktu' => $this->request->getPost('waktu')
         ];
 
+        // cari apakah ada quiz dengan level yang sama
+        $availQuiz = $quizModel->where('kelas_id', $quizData['kelas_id'])->where('level', $quizData['level'])->first();
+
+        if ($availQuiz) {
+            return redirect()->to('/guru/addQuiz/' . $quizData['kelas_id'])->withInput()->with('error', 'Quiz dengan level ' . $quizData['level'] . ' sudah ada!');
+        }
+
         // Menyimpan data quiz ke database
         $quizModel->save($quizData);
 
