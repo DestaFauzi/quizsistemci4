@@ -49,14 +49,14 @@ $routes->get('guru/detailKelas/(:num)', 'GuruController::detailKelas/$1');
 $routes->get('guru/viewQuiz/(:num)', 'GuruController::viewQuiz/$1');
 // Route untuk upload materi
 $routes->post('guru/uploadMateri', 'GuruController::uploadMateri');
-// Route untuk menambah quiz
-$routes->get('guru/addQuiz/(:segment)', 'GuruController::addQuiz/$1');
-$routes->post('guru/saveQuiz', 'GuruController::saveQuiz');
+// // Route untuk menambah quiz
+// $routes->get('guru/addQuiz/(:segment)', 'GuruController::addQuiz/$1');
+// $routes->post('guru/saveQuiz', 'GuruController::saveQuiz');
 // Route untuk melihat semua quiz
 $routes->get('guru/viewQuiz/(:segment)', 'GuruController::viewQuiz/$1');
-// Route untuk upload quiz
-$routes->get('guru/addQuiz/(:segment)', 'GuruController::addQuiz/$1');
-$routes->post('guru/saveQuiz', 'GuruController::saveQuiz');
+// // Route untuk upload quiz
+// $routes->get('guru/addQuiz/(:segment)', 'GuruController::addQuiz/$1');
+// $routes->post('guru/saveQuiz', 'GuruController::saveQuiz');
 // Route untuk menambah soal
 $routes->get('guru/addSoal/(:segment)', 'GuruController::addSoal/$1');
 $routes->post('guru/saveSoal', 'GuruController::saveSoal');
@@ -101,4 +101,3 @@ $routes->post('/murid/selesaikanMateri/(:segment)/(:segment)', 'MuridController:
 $routes->get('/murid/aksesQuiz/(:num)', 'MuridController::aksesQuiz/$1');
 $routes->post('/murid/submitQuiz/(:segment)/(:segment)', 'MuridController::submitQuiz/$1/$2');
 $routes->get('/murid/leaderboard/(:segment)', 'MuridController::leaderboard/$1');
-    
