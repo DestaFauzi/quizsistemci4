@@ -119,6 +119,35 @@
             color: var(--primary);
         }
 
+        .flash-alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-top: -20px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            font-weight: 500;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .flash-alert i {
+            margin-right: 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        .flash-success {
+            background-color: rgba(75, 181, 67, 0.1);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .flash-danger {
+            background-color: rgba(217, 83, 79, 0.1);
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+
         .material-list,
         .quiz-list {
             display: flex;
@@ -312,6 +341,20 @@
                 </span>
             <?php endif; ?>
         </div>
+
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="flash-alert flash-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <?= session()->getFlashdata('error') ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (session()->getFlashdata('success')): ?>
+            <div class="flash-alert flash-success">
+                <i class="fas fa-check-circle"></i>
+                <?= session()->getFlashdata('success') ?>
+            </div>
+        <?php endif; ?>
 
         <div class="content-section">
             <div class="section-card">

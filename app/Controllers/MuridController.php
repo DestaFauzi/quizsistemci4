@@ -715,6 +715,25 @@ class MuridController extends Controller
             return redirect()->back()->with('error', 'Anda tidak terdaftar di kelas ini.');
         }
 
+        if ($materi['level'] > 1) {
+            $prevMateri = $materiModel
+                ->where('kelas_id', $kelasId)
+                ->where('level', $materi['level'] - 1)
+                ->first();
+
+            if ($prevMateri) {
+                $prevProgress = $materiSiswaModel
+                    ->where('materi_id', $prevMateri['id'])
+                    ->where('murid_id', $muridId)
+                    ->where('status', 'selesai')
+                    ->first();
+
+                if (!$prevProgress) {
+                    return redirect()->back()->with('error', 'Selesaikan materi sebelumnya terlebih dahulu.');
+                }
+            }
+        }
+
         // cek apakah sudah ada data di materi_siswa
         $existing = $materiSiswaModel
             ->where('materi_id', $materiId)
