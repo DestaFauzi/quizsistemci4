@@ -186,6 +186,29 @@
             margin-right: 0.5rem;
         }
 
+        .done-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: var(--success);
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .done-btn:hover {
+            background-color: #3fa037;
+            box-shadow: 0 3px 10px rgba(75, 181, 67, 0.2);
+        }
+
+        .done-btn i {
+            margin-right: 0.5rem;
+        }
+
         .locked-message {
             color: var(--gray);
             font-size: 0.9rem;
@@ -281,7 +304,7 @@
                 </span>
             <?php elseif ($status['status'] == 'proses'): ?>
                 <span class="status-badge status-in-progress">
-                    <i class="fas fa-spinner"></i> Dalam Proses (Level <?= $status['level'] ?>)
+                    <i class="fas fa-spinner"></i> Dalam Proses (Level <?= $status['level_materi'] ?>)
                 </span>
             <?php else: ?>
                 <span class="status-badge status-completed">
@@ -308,22 +331,35 @@
                                 </div>
 
                                 <div class="item-action">
-                                    <?php if ($status['status'] == 'belum_dimulai'): ?>
+                                    <?php if (!$item['can_access']): ?>
                                         <p class="locked-message">
-                                            <i class="fas fa-lock"></i> Mulai kelas untuk mengakses materi
+                                            <i class="fas fa-lock"></i>
+                                            <?= ($status['status'] == 'belum_dimulai')
+                                                ? 'Mulai kelas untuk mengakses materi'
+                                                : 'Selesaikan level ' . ($item['level'] - 1) . ' terlebih dahulu' ?>
                                         </p>
-                                    <?php elseif ($item['level'] == 1 || ($item['level'] > 1 && $status['level'] >= $item['level'])): ?>
-                                        <a href="<?= base_url($item['file_path']) ?>" target="_blank" class="view-btn">
+                                    <?php else: ?>
+                                        <a href="<?= site_url("murid/aksesMateri/{$kelas['id']}/{$item['id']}") ?>" target="_blank" class="view-btn">
                                             <i class="fas fa-eye"></i> Lihat Materi Ini
                                         </a>
-                                    <?php else: ?>
-                                        <p class="locked-message">
-                                            <i class="fas fa-lock"></i> Selesaikan level <?= $item['level'] - 1 ?> terlebih dahulu
-                                        </p>
+
+                                        <?php if (!$item['is_completed'] && $status['status_materi'] == 'sedang_dibaca'): ?>
+                                            <form action="<?= site_url("murid/selesaikanMateri/{$kelas['id']}/{$item['id']}") ?>" method="post" style="display: inline;">
+                                                <button type="submit" class="done-btn">
+                                                    <i class="fas fa-check-circle"></i> Selesaikan Bacaan
+                                                </button>
+                                            </form>
+                                        <?php elseif ($item['is_completed'] || $status['status_materi'] == 'selesai'): ?>
+                                            <span class="done-btn">
+                                                <i class="fas fa-check"></i> Sudah Dibaca
+                                            </span>
+                                        <?php endif; ?>
+
                                     <?php endif; ?>
                                 </div>
                             </div>
                         <?php endforeach; ?>
+
                     <?php endif; ?>
                 </div>
             </div>
@@ -349,8 +385,8 @@
                                         <p class="locked-message">
                                             <i class="fas fa-lock"></i> Mulai kelas untuk mengakses quiz
                                         </p>
-                                    <?php elseif ($item['level'] == 1 || ($item['level'] > 1 && $status['level'] >= $item['level'])): ?>
-                                        <?php if ($status['status'] == 'selesai' && $status['level'] >= $item['level']): ?>
+                                    <?php elseif ($item['level'] == 1 || ($item['level'] > 1 && $status['level_quiz'] >= $item['level'])): ?>
+                                        <?php if ($status['status'] == 'selesai' && $status['level_quiz'] >= $item['level']): ?>
                                             <p class="completed-message">
                                                 <i class="fas fa-check-circle"></i> Quiz ini sudah selesai
                                             </p>
@@ -381,7 +417,7 @@
                 <a href="<?= site_url('murid/lanjutkanKelas/' . $kelas['id']) ?>" class="primary-btn">
                     Lanjutkan Belajar <i class="fas fa-arrow-right"></i>
                 </a>
-            <?php elseif ($status['status'] == 'selesai'):?>
+            <?php elseif ($status['status'] == 'selesai'): ?>
                 <a href="<?= site_url('murid/reviewKelas/' . $kelas['id']) ?>" class="primary-btn">
                     <i class="fas fa-redo"></i> Review Kelas
                 </a>
