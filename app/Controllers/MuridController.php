@@ -60,24 +60,57 @@ class MuridController extends Controller
         $kelasSiswaModel = new KelasSiswaModel();
         $muridId = session()->get('user_id');
 
-        // Dapatkan kelas yang statusnya 'proses' untuk murid
-        $kelasSiswa = $kelasSiswaModel->where('murid_id', $muridId)
-            ->where('status', 'proses')
+        // Ambil langsung data kelas yang statusnya 'proses'
+        $kelasList = $kelasSiswaModel
+            ->select('kelas.*, kelas_siswa.id AS kelas_siswa_id')
+            ->join('kelas', 'kelas.id = kelas_siswa.kelas_id')
+            ->where('kelas_siswa.murid_id', $muridId)
+            ->where('kelas_siswa.status', 'proses')
             ->findAll();
-
-        // Ambil data kelas
-        $kelasModel = new KelasModel();
-        $kelasList = [];
-        foreach ($kelasSiswa as $kelas) {
-            $kelasList[] = $kelasModel->find($kelas['kelas_id']);
-        }
 
         // Ambil materi dan quiz untuk masing-masing kelas
         $materiModel = new MateriModel();
+        $materiSiswaModel = new MateriSiswaModel();
         $quizModel = new QuizModel();
+        $quizResultModel = new QuizResultsModel();
+
         foreach ($kelasList as &$kelas) {
-            $kelas['materi'] = $materiModel->where('kelas_id', $kelas['id'])->orderBy('level', 'ASC')->findAll();
-            $kelas['quiz'] = $quizModel->where('kelas_id', $kelas['id'])->orderBy('level', 'ASC')->findAll();
+            $kelasId = $kelas['id'];
+
+            // Ambil semua materi dan quiz
+            $allMateri = $materiModel->where('kelas_id', $kelasId)->findAll();
+            $allQuiz = $quizModel->where('kelas_id', $kelasId)->findAll();
+
+            $totalMateri = count($allMateri);
+            $totalQuiz = count($allQuiz);
+
+            // Hitung materi yang diselesaikan oleh murid
+            $selesaiMateri = $materiSiswaModel
+                ->where('murid_id', $muridId)
+                ->whereIn('materi_id', array_column($allMateri, 'id'))
+                ->where('status', 'selesai')
+                ->countAllResults();
+
+            // Hitung quiz yang diselesaikan oleh murid
+            $selesaiQuiz = $quizResultModel
+                ->where('murid_id', $muridId)
+                ->whereIn('quiz_id', array_column($allQuiz, 'id'))
+                ->countAllResults();
+
+            // Hitung total progress
+            $totalItem = $totalMateri + $totalQuiz;
+            $totalItemSelesai = $selesaiMateri + $selesaiQuiz;
+            $persen = $totalItem > 0 ? round(($totalItemSelesai / $totalItem) * 100) : 0;
+
+            $kelas['materi'] = $allMateri;
+            $kelas['quiz'] = $allQuiz;
+            $kelas['progress'] = [
+                'materi_selesai' => $selesaiMateri,
+                'total_materi' => $totalMateri,
+                'quiz_selesai' => $selesaiQuiz,
+                'total_quiz' => $totalQuiz,
+                'persen' => $persen
+            ];
         }
 
         // Kirim data kelas, materi, dan quiz ke view

@@ -117,7 +117,6 @@
 
         .progress-fill {
             height: 100%;
-            width: 65%;
             background-color: var(--accent-color);
             border-radius: 4px;
         }
@@ -200,15 +199,15 @@
                         <div class="progress-container">
                             <div class="progress-text">
                                 <span>Progress</span>
-                                <span>65%</span>
+                                <span><?= $kelas['progress']['persen']; ?>%</span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill"></div>
+                                <div class="progress-fill" style="width: <?= $kelas['progress']['persen']; ?>%"></div>
                             </div>
                         </div>
 
                         <div class="action-buttons">
-                            <a href="<?= site_url('murid/lanjutkanKelas/' . $kelas['id']) ?>" class="btn btn-primary">Lanjutkan Belajar</a>
+                            <a href="<?= site_url("murid/detailKelas/{$kelas['id']}") ?>" class="btn btn-primary">Lanjutkan Belajar</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
