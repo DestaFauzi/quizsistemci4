@@ -430,7 +430,7 @@
                                     <?php elseif ($item['can_access']): ?>
                                         <?php if ($item['is_completed']): ?>
                                             <p class="completed-message">
-                                                <i class="fas fa-check-circle"></i> Quiz ini sudah selesai
+                                                <i class="fas fa-check-circle"></i> Quiz ini sudah selesai dengan skor <span style="font-weight: 600; margin-left: 5px;"><?= $item['score']; ?></span>
                                             </p>
                                         <?php else: ?>
                                             <a href="<?= site_url("/murid/aksesQuiz/{$kelas['id']}/{$item['id']}") ?>" class="view-btn">

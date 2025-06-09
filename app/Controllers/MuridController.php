@@ -265,13 +265,16 @@ class MuridController extends Controller
             if ($status['status'] == 'belum_dimulai') {
                 $q['can_access'] = false;
                 $q['is_completed'] = false;
+                $q['score'] = null;
             } else {
                 // Cek apakah quiz ini sudah diselesaikan
-                $quizResult = $quizResultsModel->where('murid_id', $userId)
+                $quizResult = $quizResultsModel
+                    ->where('murid_id', $userId)
                     ->where('quiz_id', $q['id'])
                     ->first();
 
                 $q['is_completed'] = $quizResult !== null;
+                $q['score'] = $quizResult['score'] ?? null;
 
                 // Validasi pastikan semua materi dengan level <= quiz sudah selesai
                 $requiredMateri = $materiModel
@@ -316,8 +319,6 @@ class MuridController extends Controller
             'quiz' => $filteredQuiz,
             'status' => $status
         ];
-
-        // dd($data);
 
         return view('murid/detail_kelas', $data);
     }
