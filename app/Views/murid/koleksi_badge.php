@@ -277,6 +277,8 @@
 
         .earn-badge-btn i {
             margin-left: 0.5rem;
+            font-size: 1rem;
+            margin-bottom: 0;
         }
 
         @media (max-width: 768px) {
