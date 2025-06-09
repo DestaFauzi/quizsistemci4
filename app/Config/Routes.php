@@ -73,37 +73,37 @@ $routes->get('guru/editSoal/(:num)', 'GuruController::editSoal/$1');
 $routes->post('guru/updateSoal', 'GuruController::updateSoal');
 
 
-
 //ROUTES MURID
-// Routes untuk menuju dashboard murid
-$routes->get('murid/dashboard', 'MuridController::dashboard');
 $routes->get('murid/dashboard', 'MuridController::dashboard');
 $routes->get('murid/semuaKelas', 'MuridController::semuaKelas');
 $routes->get('murid/kelasDalamProses', 'MuridController::kelasDalamProses');
-$routes->get('murid/lanjutkanKelas/(:num)', 'MuridController::lanjutkanKelas/$1');
-
 $routes->get('murid/kelasSelesai', 'MuridController::kelasSelesai');
 $routes->get('murid/koleksiBadge', 'MuridController::koleksiBadge');
-$routes->get('murid/selesaiKelas/(:num)', 'MuridController::selesaiKelas/$1');
 $routes->get('murid/detailKelas/(:num)', 'MuridController::detailKelas/$1');
-$routes->get('murid/masukKelas/(:num)', 'MuridController::masukKelas/$1');
-$routes->get('/murid/kelasSelesai', 'MuridController::kelasSelesai');
-$routes->get('murid/leaderboard/(:num)', 'MuridController::leaderboard/$1');
-$routes->get('/murid/quiz/(:num)', 'QuizController::viewQuiz/$1');  // Melihat quiz // Mengirim jawaban
 
-// $routes->get('/murid/aksesMateri/(:num)/(:num)', 'MuridController::aksesMateri/$1/$2');
-$routes->get('/murid/selesaikanKelas/(:num)', 'MuridController::selesaikanKelas/$1');
+// Routes untuk akses kelas, materi, quiz, dan leaderboard
+$routes->get('murid/masukKelas/(:num)', 'MuridController::masukKelas/$1');
+$routes->get('murid/aksesMateri/(:segment)/(:segment)', 'MuridController::aksesMateri/$1/$2');
+$routes->get('murid/aksesQuiz/(:num)/(:num)', 'MuridController::aksesQuiz/$1/$2');
+$routes->post('murid/submitQuiz/(:segment)/(:segment)', 'MuridController::submitQuiz/$1/$2');
+
+//routes selesaikan materi
+$routes->post('/murid/selesaikanMateri/(:segment)/(:segment)', 'MuridController::selesaikanMateri/$1/$2');
+
+$routes->get('murid/leaderboard/(:num)', 'MuridController::leaderboard/$1');
+$routes->get('murid/leaderboard/(:segment)', 'MuridController::leaderboard/$1');
+
+
+// Routes untuk menuju dashboard murid
+// $routes->get('murid/lanjutkanKelas/(:num)', 'MuridController::lanjutkanKelas/$1');
+// $routes->get('murid/selesaiKelas/(:num)', 'MuridController::selesaiKelas/$1');
+// $routes->get('/murid/kelasSelesai', 'MuridController::kelasSelesai');
+// $routes->get('/murid/quiz/(:num)', 'QuizController::viewQuiz/$1');  // Melihat quiz // Mengirim jawaban
+
+// $routes->get('/murid/selesaikanKelas/(:num)', 'MuridController::selesaikanKelas/$1');
 // $routes->get('/murid/aksesKelas/(:segment)', 'MuridController::aksesKelas/$1');
-// $routes->get('/murid/aksesMateri/(:segment)/(:segment)', 'MuridController::aksesMateri/$1/$2');
 // $routes->get('/murid/aksesQuiz/(:segment)', 'MuridController::aksesQuiz/$1');
 // $routes->post('/murid/submitQuiz/(:segment)', 'MuridController::submitQuiz/$1');
 
 // Routes untuk akses kelas, materi, quiz, dan leaderboard
-$routes->get('/murid/aksesKelas/(:segment)', 'MuridController::aksesKelas/$1');
-$routes->get('/murid/masukKelas/(:segment)', 'MuridController::masukKelas/$1');
-$routes->get('/murid/aksesMateri/(:segment)/(:segment)', 'MuridController::aksesMateri/$1/$2');
-//routes selesaikan materi
-$routes->post('/murid/selesaikanMateri/(:segment)/(:segment)', 'MuridController::selesaikanMateri/$1/$2');
-$routes->get('/murid/aksesQuiz/(:num)/(:num)', 'MuridController::aksesQuiz/$1/$2');
-$routes->post('/murid/submitQuiz/(:segment)/(:segment)', 'MuridController::submitQuiz/$1/$2');
-$routes->get('/murid/leaderboard/(:segment)', 'MuridController::leaderboard/$1');
+// $routes->get('/murid/aksesKelas/(:segment)', 'MuridController::aksesKelas/$1');
