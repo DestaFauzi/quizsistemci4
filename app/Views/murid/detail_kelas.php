@@ -427,8 +427,8 @@
                                         <p class="locked-message">
                                             <i class="fas fa-lock"></i> Mulai kelas untuk mengakses quiz
                                         </p>
-                                    <?php elseif ($item['level'] == 1 || ($item['level'] > 1 && $status['level_quiz'] >= $item['level'])): ?>
-                                        <?php if ($status['status'] == 'selesai' && $status['level_quiz'] >= $item['level']): ?>
+                                    <?php elseif ($item['can_access']): ?>
+                                        <?php if ($item['is_completed']): ?>
                                             <p class="completed-message">
                                                 <i class="fas fa-check-circle"></i> Quiz ini sudah selesai
                                             </p>
@@ -439,7 +439,7 @@
                                         <?php endif; ?>
                                     <?php else: ?>
                                         <p class="locked-message">
-                                            <i class="fas fa-lock"></i> Selesaikan level <?= $item['level'] - 1 ?> terlebih dahulu
+                                            <i class="fas fa-lock"></i> Selesaikan semua materi hingga level <?= $item['level'] ?> terlebih dahulu
                                         </p>
                                     <?php endif; ?>
                                 </div>

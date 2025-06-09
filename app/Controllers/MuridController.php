@@ -265,17 +265,47 @@ class MuridController extends Controller
             if ($status['status'] == 'belum_dimulai') {
                 $q['can_access'] = false;
                 $q['is_completed'] = false;
-            } elseif ($q['level'] <= $status['level_quiz']) {
-                $q['can_access'] = true;
+            } else {
                 // Cek apakah quiz ini sudah diselesaikan
                 $quizResult = $quizResultsModel->where('murid_id', $userId)
                     ->where('quiz_id', $q['id'])
                     ->first();
-                $q['is_completed'] = ($quizResult !== null);
-            } else {
-                $q['can_access'] = false;
-                $q['is_completed'] = false;
+
+                $q['is_completed'] = $quizResult !== null;
+
+                // Validasi pastikan semua materi dengan level <= quiz sudah selesai
+                $requiredMateri = $materiModel
+                    ->where('kelas_id', $kelas['id'])
+                    ->where('level <=', $q['level'])
+                    ->findAll();
+
+                $semuaMateriSelesai = true;
+                foreach ($requiredMateri as $materi) {
+                    $materiSiswa = $materiSiswaModel
+                        ->where('murid_id', $userId)
+                        ->where('materi_id', $materi['id'])
+                        ->where('status', 'selesai')
+                        ->first();
+
+                    if (!$materiSiswa) {
+                        $semuaMateriSelesai = false;
+                        break;
+                    }
+                }
+
+                // Validasi quiz sebelumnya (level - 1) apakah sudah selesai
+                $quizSebelumnya = $quizResultsModel
+                    ->where('murid_id', $userId)
+                    ->join('quiz', 'quiz.id = quiz_results.quiz_id')
+                    ->where('quiz.kelas_id', $kelas['id'])
+                    ->where('quiz.level', $q['level'] - 1)
+                    ->first();
+
+                $quizSebelumnyaSelesai = ($q['level'] == 1) || $quizSebelumnya !== null;
+
+                $q['can_access'] = $semuaMateriSelesai && $quizSebelumnyaSelesai;
             }
+
             $filteredQuiz[] = $q;
         }
 
@@ -286,6 +316,8 @@ class MuridController extends Controller
             'quiz' => $filteredQuiz,
             'status' => $status
         ];
+
+        // dd($data);
 
         return view('murid/detail_kelas', $data);
     }
@@ -815,14 +847,14 @@ class MuridController extends Controller
     //         ->with('success', 'Quiz berhasil diselesaikan! Skor: ' . $score);
     // }
 
-    private function checkLevelCompletion($userId, $kelasId) {}
 
-    // Fungsi untuk mengakses quiz
-    public function aksesQuiz($kelasId, $quizId)
+    /**
+     * Menangani akses ke halaman quiz untuk murid
+     */
+    public function aksesQuiz($kelasId, $quizId): \CodeIgniter\HTTP\RedirectResponse|string
     {
         $quizModel = new QuizModel();
         $soalModel = new SoalModel();
-        $kelasSiswaModel = new KelasSiswaModel();
         $kelasModel = new KelasModel();
 
         $muridId = session()->get('user_id');
@@ -853,7 +885,7 @@ class MuridController extends Controller
 
         $requiredMateri = $materiModel
             ->where('kelas_id', $kelas['id'])
-            ->where('level <', $quiz['level']) // semua materi sebelum quiz ini
+            ->where('level <=', $quiz['level']) // semua materi sebelum quiz ini
             ->orderBy('level', 'asc')
             ->findAll();
 
@@ -865,7 +897,7 @@ class MuridController extends Controller
                 ->first();
 
             if (!$materiSiswa) {
-                return redirect()->back()->with('error', 'Anda harus menyelesaikan semua materi sebelumnya untuk mengakses quiz ini.');
+                return redirect()->to(site_url("murid/detailKelas/$kelasId"))->with('error', 'Anda harus menyelesaikan semua materi sebelumnya untuk mengakses quiz ini.');
             }
         }
 
