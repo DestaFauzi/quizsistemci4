@@ -167,7 +167,6 @@ class MuridController extends Controller
         return view('murid/kelas_selesai', ['kelasList' => $kelasList]);
     }
 
-
     public function koleksiBadge()
     {
         // Ambil semua badge yang telah didapatkan murid
@@ -175,45 +174,6 @@ class MuridController extends Controller
         $badge = $badgeModel->where('murid_id', session()->get('user_id'))->findAll();
 
         return view('murid/koleksi_badge', ['badge' => $badge]);
-    }
-
-    // Fungsi untuk menyelesaikan kelas
-    public function selesaikanKelas($kelasId)
-    {
-        $kelasSiswaModel = new KelasSiswaModel();
-        $muridId = session()->get('user_id');
-
-        // Update status kelas menjadi 'selesai'
-        $kelasSiswaModel->where('murid_id', $muridId)
-            ->where('kelas_id', $kelasId)
-            ->update(['status' => 'selesai']);
-
-        return redirect()->to("/murid/aksesKelas/{$kelasId}")->with('success', 'Kelas berhasil diselesaikan!');
-    }
-
-    // Fungsi untuk menandai status kelas sebagai selesai
-    public function selesaiKelas($kelas_id)
-    {
-        $kelasSiswaModel = new KelasSiswaModel();
-
-        // Update status kelas menjadi selesai
-        $kelasSiswaModel->updateStatusKelas(session()->get('user_id'), $kelas_id, 'selesai');
-
-        // Cek jika semua materi dan quiz sudah selesai
-        $this->markMateriAndQuizAsCompleted($kelas_id);
-
-        // Berikan badge kepada murid
-        $this->addBadge($kelas_id);
-
-        return redirect()->to('/murid/dashboard')->with('success', 'Kelas selesai! Anda mendapatkan badge.');
-    }
-
-    // Fungsi untuk menandai status materi dan quiz sebagai selesai
-    public function markMateriAndQuizAsCompleted($kelas_id)
-    {
-        $kelasSiswaModel = new KelasSiswaModel();
-        $kelasSiswaModel->updateStatusMateri(session()->get('user_id'), $kelas_id, 'selesai');
-        $kelasSiswaModel->updateStatusQuiz(session()->get('user_id'), $kelas_id, 'selesai');
     }
 
     // Fungsi untuk memberikan badge kepada murid
@@ -452,34 +412,6 @@ class MuridController extends Controller
         return $currentLevel;
     }
 
-    protected function getQuizLevelSiswa($muridId, $kelasId)
-    {
-        $quizModel = new QuizModel();
-        $quizResultsModel = new QuizResultsModel();
-
-        // Ambil semua quiz untuk kelas ini
-        $quizList = $quizModel->where('kelas_id', $kelasId)->findAll();
-        $quizIdToLevel = [];
-        foreach ($quizList as $q) {
-            $quizIdToLevel[$q['id']] = $q['level'];
-        }
-
-        // Ambil hasil quiz yang telah dikerjakan
-        $results = $quizResultsModel->where('murid_id', $muridId)->findAll();
-
-        $maxLevel = 0;
-        foreach ($results as $result) {
-            if (isset($quizIdToLevel[$result['quiz_id']])) {
-                $level = $quizIdToLevel[$result['quiz_id']];
-                if ($level > $maxLevel) {
-                    $maxLevel = $level;
-                }
-            }
-        }
-
-        return $maxLevel + 1; // level selanjutnya yang bisa diakses
-    }
-
     public function masukKelas($id)
     {
         $kelasSiswaModel = new KelasSiswaModel();
@@ -603,192 +535,7 @@ class MuridController extends Controller
         return redirect()->to("/murid/detailKelas/{$kelasId}")->with('success', 'Materi berhasil diselesaikan!');
     }
 
-    // public function masukKelas($id)
-    // {
-    //     $kelasSiswaModel = new KelasSiswaModel();
-    //     $userId = session()->get('user_id');
-
-    //     // Cek apakah sudah terdaftar di kelas
-    //     $existing = $kelasSiswaModel->where('kelas_id', $id)
-    //         ->where('murid_id', $userId)
-    //         ->first();
-
-    //     if (!$existing) {
-    //         // Daftarkan siswa ke kelas
-    //         $data = [
-    //             'kelas_id' => $id,
-    //             'murid_id' => $userId,
-    //             'status' => 'proses',
-    //             'status_materi' => 'belum_diakses',
-    //             'status_quiz' => 'belum_dikerjakan',
-    //             'created_at' => date('Y-m-d H:i:s'),
-    //             'updated_at' => date('Y-m-d H:i:s')
-    //         ];
-    //         $kelasSiswaModel->insert($data);
-    //     } else {
-    //         // Update status jika sudah terdaftar tapi belum mulai
-    //         if ($existing['status'] == 'belum_dimulai') {
-    //             $kelasSiswaModel->update($existing['id'], [
-    //                 'status' => 'proses',
-    //                 'updated_at' => date('Y-m-d H:i:s')
-    //             ]);
-    //         }
-    //     }
-
-    //     return redirect()->to("/murid/lanjutkanKelas/$id");
-    // }
-    // public function masukKelas($kelas_id)
-    // {
-    //     $kelasSiswaModel = new KelasSiswaModel();
-    //     $muridId = session()->get('user_id');
-
-    //     // Periksa apakah murid sudah terdaftar dalam kelas ini
-    //     $kelasSiswa = $kelasSiswaModel->where('murid_id', $muridId)
-    //         ->where('kelas_id', $kelas_id)
-    //         ->first();
-
-    //     if (!$kelasSiswa) {
-    //         // Jika belum, buat record baru dengan status 'proses'
-    //         $kelasSiswaModel->save([
-    //             'kelas_id' => $kelas_id,
-    //             'murid_id' => $muridId,
-    //             'status' => 'proses',
-    //             'status_materi' => 'belum_diakses',
-    //             'status_quiz' => 'belum_dikerjakan',
-    //         ]);
-    //     } else {
-    //         // Update status menjadi 'proses' jika sudah terdaftar
-    //         $kelasSiswaModel->update($kelasSiswa['id'], [
-    //             'status' => 'proses',
-    //             'status_materi' => 'belum_diakses',
-    //             'status_quiz' => 'belum_dikerjakan',
-    //         ]);
-    //     }
-
-    //     // Redirect ke halaman detail kelas
-    //     return redirect()->to('/murid/detailKelas/' . $kelas_id);
-    // }
-    // Fungsi untuk melanjutkan kelas
-
-
-
-    public function lanjutkanKelas($kelasId)
-    {
-        $kelasSiswaModel = new KelasSiswaModel();
-        $userId = session()->get('user_id');
-
-        // Cek apakah murid sudah terdaftar di kelas ini
-        $kelasSiswa = $kelasSiswaModel->where('kelas_id', $kelasId)
-            ->where('murid_id', $userId)
-            ->first();
-
-        if (!$kelasSiswa) {
-            return redirect()->back()->with('error', 'Anda belum terdaftar di kelas ini.');
-        }
-
-        // Cek status kelas
-        if ($kelasSiswa['status'] == 'selesai') {
-            return redirect()->to("/murid/aksesKelas/{$kelasId}")->with('info', 'Anda sudah menyelesaikan kelas ini.');
-        }
-
-        // Redirect ke halaman akses kelas
-        return redirect()->to("/murid/aksesKelas/{$kelasId}");
-    }
-
-    public function aksesKelas($kelasId)
-    {
-        // Ambil data kelas berdasarkan kelasId
-        $kelasModel = new KelasModel();
-        $kelas = $kelasModel->find($kelasId);
-
-        // Ambil status kelas murid
-        $kelasSiswaModel = new KelasSiswaModel();
-        $muridId = session()->get('user_id');
-        $statusKelas = $kelasSiswaModel->where('kelas_id', $kelasId)
-            ->where('murid_id', $muridId)
-            ->first();
-
-        // Ambil materi dan quiz yang terkait dengan kelas
-        $materiModel = new MateriModel();
-        $quizModel = new QuizModel();
-
-        $materi = $materiModel->where('kelas_id', $kelasId)->findAll();
-        $quiz = $quizModel->where('kelas_id', $kelasId)->findAll();
-
-        // Cek status level (belum bisa akses level lebih tinggi tanpa menyelesaikan level sebelumnya)
-        $status_materi_level_1 = $this->cekStatusLevel('materi', $muridId, $kelasId, 1);
-        $status_quiz_level_1 = $this->cekStatusLevel('quiz', $muridId, $kelasId, 1);
-        // Jika murid belum terdaftar di kelas, redirect ke halaman masuk kelas
-        if (!$statusKelas) {
-            return redirect()->to("/murid/masukKelas/{$kelasId}")->with('error', 'Anda belum terdaftar di kelas ini.');
-        }
-        // Jika murid sudah menyelesaikan kelas, redirect ke halaman detail kelas
-        if ($statusKelas['status'] == 'selesai') {
-            return redirect()->to("/murid/detailKelas/{$kelasId}")->with('info', 'Anda sudah menyelesaikan kelas ini.');
-        }
-        // Jika murid belum memulai kelas, set status awal
-        if ($statusKelas['status'] == 'belum_dimulai') {
-            $kelasSiswaModel->update($statusKelas['id'], [
-                'status' => 'proses',
-                'status_materi' => 'belum_diakses',
-                'status_quiz' => 'belum_dikerjakan',
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
-        }
-        // Jika murid sudah memulai kelas, pastikan statusnya 'proses'
-        elseif ($statusKelas['status'] != 'proses') {
-            $kelasSiswaModel->update($statusKelas['id'], [
-                'status' => 'proses',
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
-        }
-        // Kirim data ke view
-        return view('murid/akses_kelas', [
-            'kelas' => $kelas,
-            'materi' => $materi,
-            'quiz' => $quiz,
-            'status_materi_level_1' => $status_materi_level_1,
-            'status_quiz_level_1' => $status_quiz_level_1
-        ]);
-    }
-
-    // Fungsi untuk mengecek status materi atau quiz untuk level tertentu
-    private function cekStatusLevel($type, $muridId, $kelasId, $level)
-    {
-        // Model yang digunakan untuk materi dan quiz
-        $model = ($type === 'materi') ? new MateriModel() : new QuizModel();
-
-        // Cari materi atau quiz berdasarkan level dan kelas
-        $data = $model->where('kelas_id', $kelasId)
-            ->where('level', $level)
-            ->first();
-
-        if ($data) {
-            // Periksa status untuk materi atau quiz yang bersangkutan
-            $kelasSiswaModel = new KelasSiswaModel();
-            $status = $kelasSiswaModel->where('murid_id', $muridId)
-                ->where('kelas_id', $kelasId)
-                ->first();
-
-            return $status['status'] === 'selesai' ? 'selesai' : 'belum selesai';
-        }
-
-        return 'belum selesai';
-    }
-
-    private function checkLevelStatus($muridId, $kelas_id, $level, $type)
-    {
-        $kelasSiswaModel = new KelasSiswaModel();
-        $status = $kelasSiswaModel->where('murid_id', $muridId)->where('kelas_id', $kelas_id)->first();
-
-        // Implement the logic to check if the user has completed the material or quiz at the specific level.
-        // Return true if completed, false if not.
-
-        return true;  // Just as a placeholder for now
-    }
-
     // Fungsi untuk menyelesaikan dan submit quiz
-
     public function aksesMateri($kelasId, $materiId)
     {
         $muridId = session()->get('user_id');
@@ -851,63 +598,6 @@ class MuridController extends Controller
         // redirect ke file_path (lihat materi)
         return redirect()->to(base_url($materi['file_path']));
     }
-
-    // public function submitQuiz($kelasId, $quizId)
-    // {
-    //     $quizModel = new QuizModel();
-    //     $soalModel = new SoalModel();
-    //     $quizResultsModel = new QuizResultsModel();
-    //     $kelasSiswaModel = new KelasSiswaModel();
-
-    //     $userId = session()->get('user_id');
-    //     $quiz = $quizModel->find($quizId);
-
-    //     // Validasi
-    //     if (!$quiz || $quiz['kelas_id'] != $kelasId) {
-    //         return redirect()->back()->with('error', 'Quiz tidak valid');
-    //     }
-
-    //     // Proses jawaban quiz
-    //     $jawaban = $this->request->getPost('jawaban');
-    //     $soalQuiz = $soalModel->where('quiz_id', $quizId)->findAll();
-
-    //     $score = 0;
-    //     foreach ($soalQuiz as $soal) {
-    //         if (isset($jawaban[$soal['id']])) {
-    //             if ($jawaban[$soal['id']] == $soal['jawaban_benar']) {
-    //                 $score += $soal['poin'];
-    //             }
-    //         }
-    //     }
-
-    //     // Simpan hasil quiz
-    //     $quizResultsModel->insert([
-    //         'quiz_id' => $quizId,
-    //         'murid_id' => $userId,
-    //         'kelas_id' => $kelasId,
-    //         'score' => $score,
-    //         'created_at' => date('Y-m-d H:i:s'),
-    //         'updated_at' => date('Y-m-d H:i:s')
-    //     ]);
-
-    //     // Jika quiz level 1, update status_quiz
-    //     if ($quiz['level'] == 1) {
-    //         $kelasSiswaModel->where('kelas_id', $kelasId)
-    //             ->where('murid_id', $userId)
-    //             ->set([
-    //                 'status_quiz' => 'selesai',
-    //                 'updated_at' => date('Y-m-d H:i:s')
-    //             ])
-    //             ->update();
-    //     }
-
-    //     // Cek apakah ini quiz terakhir untuk naik level
-    //     $this->checkLevelCompletion($userId, $kelasId);
-
-    //     return redirect()->to("/murid/detailKelas/$kelasId")
-    //         ->with('success', 'Quiz berhasil diselesaikan! Skor: ' . $score);
-    // }
-
 
     /**
      * Menangani akses ke halaman quiz untuk murid
@@ -1102,6 +792,229 @@ class MuridController extends Controller
 
         return redirect()->to("/murid/detailKelas/$kelasId")->with('success', "Quiz berhasil diselesaikan! Skor: $score");
     }
+
+    // --------------------------------------------------------------------------
+
+    // Fungsi untuk menyelesaikan kelas
+    // public function selesaikanKelas($kelasId)
+    // {
+    //     $kelasSiswaModel = new KelasSiswaModel();
+    //     $muridId = session()->get('user_id');
+
+    //     // Update status kelas menjadi 'selesai'
+    //     $kelasSiswaModel->where('murid_id', $muridId)
+    //         ->where('kelas_id', $kelasId)
+    //         ->update(['status' => 'selesai']);
+
+    //     return redirect()->to("/murid/aksesKelas/{$kelasId}")->with('success', 'Kelas berhasil diselesaikan!');
+    // }
+
+    // Fungsi untuk menandai status kelas sebagai selesai
+    // public function selesaiKelas($kelas_id)
+    // {
+    //     $kelasSiswaModel = new KelasSiswaModel();
+
+    //     // Update status kelas menjadi selesai
+    //     $kelasSiswaModel->updateStatusKelas(session()->get('user_id'), $kelas_id, 'selesai');
+
+    //     // Cek jika semua materi dan quiz sudah selesai
+    //     $this->markMateriAndQuizAsCompleted($kelas_id);
+
+    //     // Berikan badge kepada murid
+    //     $this->addBadge($kelas_id);
+
+    //     return redirect()->to('/murid/dashboard')->with('success', 'Kelas selesai! Anda mendapatkan badge.');
+    // }
+
+    // Fungsi untuk menandai status materi dan quiz sebagai selesai
+    // public function markMateriAndQuizAsCompleted($kelas_id)
+    // {
+    //     $kelasSiswaModel = new KelasSiswaModel();
+    //     $kelasSiswaModel->updateStatusMateri(session()->get('user_id'), $kelas_id, 'selesai');
+    //     $kelasSiswaModel->updateStatusQuiz(session()->get('user_id'), $kelas_id, 'selesai');
+    // }
+
+    // public function masukKelas($id)
+    // {
+    //     $kelasSiswaModel = new KelasSiswaModel();
+    //     $userId = session()->get('user_id');
+
+    //     // Cek apakah sudah terdaftar di kelas
+    //     $existing = $kelasSiswaModel->where('kelas_id', $id)
+    //         ->where('murid_id', $userId)
+    //         ->first();
+
+    //     if (!$existing) {
+    //         // Daftarkan siswa ke kelas
+    //         $data = [
+    //             'kelas_id' => $id,
+    //             'murid_id' => $userId,
+    //             'status' => 'proses',
+    //             'status_materi' => 'belum_diakses',
+    //             'status_quiz' => 'belum_dikerjakan',
+    //             'created_at' => date('Y-m-d H:i:s'),
+    //             'updated_at' => date('Y-m-d H:i:s')
+    //         ];
+    //         $kelasSiswaModel->insert($data);
+    //     } else {
+    //         // Update status jika sudah terdaftar tapi belum mulai
+    //         if ($existing['status'] == 'belum_dimulai') {
+    //             $kelasSiswaModel->update($existing['id'], [
+    //                 'status' => 'proses',
+    //                 'updated_at' => date('Y-m-d H:i:s')
+    //             ]);
+    //         }
+    //     }
+
+    //     return redirect()->to("/murid/lanjutkanKelas/$id");
+    // }
+    // public function masukKelas($kelas_id)
+    // {
+    //     $kelasSiswaModel = new KelasSiswaModel();
+    //     $muridId = session()->get('user_id');
+
+    //     // Periksa apakah murid sudah terdaftar dalam kelas ini
+    //     $kelasSiswa = $kelasSiswaModel->where('murid_id', $muridId)
+    //         ->where('kelas_id', $kelas_id)
+    //         ->first();
+
+    //     if (!$kelasSiswa) {
+    //         // Jika belum, buat record baru dengan status 'proses'
+    //         $kelasSiswaModel->save([
+    //             'kelas_id' => $kelas_id,
+    //             'murid_id' => $muridId,
+    //             'status' => 'proses',
+    //             'status_materi' => 'belum_diakses',
+    //             'status_quiz' => 'belum_dikerjakan',
+    //         ]);
+    //     } else {
+    //         // Update status menjadi 'proses' jika sudah terdaftar
+    //         $kelasSiswaModel->update($kelasSiswa['id'], [
+    //             'status' => 'proses',
+    //             'status_materi' => 'belum_diakses',
+    //             'status_quiz' => 'belum_dikerjakan',
+    //         ]);
+    //     }
+
+    //     // Redirect ke halaman detail kelas
+    //     return redirect()->to('/murid/detailKelas/' . $kelas_id);
+    // }
+
+    // Fungsi untuk melanjutkan kelas
+    // public function lanjutkanKelas($kelasId)
+    // {
+    //     $kelasSiswaModel = new KelasSiswaModel();
+    //     $userId = session()->get('user_id');
+
+    //     // Cek apakah murid sudah terdaftar di kelas ini
+    //     $kelasSiswa = $kelasSiswaModel->where('kelas_id', $kelasId)
+    //         ->where('murid_id', $userId)
+    //         ->first();
+
+    //     if (!$kelasSiswa) {
+    //         return redirect()->back()->with('error', 'Anda belum terdaftar di kelas ini.');
+    //     }
+
+    //     // Cek status kelas
+    //     if ($kelasSiswa['status'] == 'selesai') {
+    //         return redirect()->to("/murid/aksesKelas/{$kelasId}")->with('info', 'Anda sudah menyelesaikan kelas ini.');
+    //     }
+
+    //     // Redirect ke halaman akses kelas
+    //     return redirect()->to("/murid/aksesKelas/{$kelasId}");
+    // }
+
+    // public function aksesKelas($kelasId)
+    // {
+    //     // Ambil data kelas berdasarkan kelasId
+    //     $kelasModel = new KelasModel();
+    //     $kelas = $kelasModel->find($kelasId);
+
+    //     // Ambil status kelas murid
+    //     $kelasSiswaModel = new KelasSiswaModel();
+    //     $muridId = session()->get('user_id');
+    //     $statusKelas = $kelasSiswaModel->where('kelas_id', $kelasId)
+    //         ->where('murid_id', $muridId)
+    //         ->first();
+
+    //     // Ambil materi dan quiz yang terkait dengan kelas
+    //     $materiModel = new MateriModel();
+    //     $quizModel = new QuizModel();
+
+    //     $materi = $materiModel->where('kelas_id', $kelasId)->findAll();
+    //     $quiz = $quizModel->where('kelas_id', $kelasId)->findAll();
+
+    //     // Cek status level (belum bisa akses level lebih tinggi tanpa menyelesaikan level sebelumnya)
+    //     $status_materi_level_1 = $this->cekStatusLevel('materi', $muridId, $kelasId, 1);
+    //     $status_quiz_level_1 = $this->cekStatusLevel('quiz', $muridId, $kelasId, 1);
+    //     // Jika murid belum terdaftar di kelas, redirect ke halaman masuk kelas
+    //     if (!$statusKelas) {
+    //         return redirect()->to("/murid/masukKelas/{$kelasId}")->with('error', 'Anda belum terdaftar di kelas ini.');
+    //     }
+    //     // Jika murid sudah menyelesaikan kelas, redirect ke halaman detail kelas
+    //     if ($statusKelas['status'] == 'selesai') {
+    //         return redirect()->to("/murid/detailKelas/{$kelasId}")->with('info', 'Anda sudah menyelesaikan kelas ini.');
+    //     }
+    //     // Jika murid belum memulai kelas, set status awal
+    //     if ($statusKelas['status'] == 'belum_dimulai') {
+    //         $kelasSiswaModel->update($statusKelas['id'], [
+    //             'status' => 'proses',
+    //             'status_materi' => 'belum_diakses',
+    //             'status_quiz' => 'belum_dikerjakan',
+    //             'updated_at' => date('Y-m-d H:i:s')
+    //         ]);
+    //     }
+    //     // Jika murid sudah memulai kelas, pastikan statusnya 'proses'
+    //     elseif ($statusKelas['status'] != 'proses') {
+    //         $kelasSiswaModel->update($statusKelas['id'], [
+    //             'status' => 'proses',
+    //             'updated_at' => date('Y-m-d H:i:s')
+    //         ]);
+    //     }
+    //     // Kirim data ke view
+    //     return view('murid/akses_kelas', [
+    //         'kelas' => $kelas,
+    //         'materi' => $materi,
+    //         'quiz' => $quiz,
+    //         'status_materi_level_1' => $status_materi_level_1,
+    //         'status_quiz_level_1' => $status_quiz_level_1
+    //     ]);
+    // }
+
+    // Fungsi untuk mengecek status materi atau quiz untuk level tertentu
+    // private function cekStatusLevel($type, $muridId, $kelasId, $level)
+    // {
+    //     // Model yang digunakan untuk materi dan quiz
+    //     $model = ($type === 'materi') ? new MateriModel() : new QuizModel();
+
+    //     // Cari materi atau quiz berdasarkan level dan kelas
+    //     $data = $model->where('kelas_id', $kelasId)
+    //         ->where('level', $level)
+    //         ->first();
+
+    //     if ($data) {
+    //         // Periksa status untuk materi atau quiz yang bersangkutan
+    //         $kelasSiswaModel = new KelasSiswaModel();
+    //         $status = $kelasSiswaModel->where('murid_id', $muridId)
+    //             ->where('kelas_id', $kelasId)
+    //             ->first();
+
+    //         return $status['status'] === 'selesai' ? 'selesai' : 'belum selesai';
+    //     }
+
+    //     return 'belum selesai';
+    // }
+
+    // private function checkLevelStatus($muridId, $kelas_id, $level, $type)
+    // {
+    //     $kelasSiswaModel = new KelasSiswaModel();
+    //     $status = $kelasSiswaModel->where('murid_id', $muridId)->where('kelas_id', $kelas_id)->first();
+
+    //     // Implement the logic to check if the user has completed the material or quiz at the specific level.
+    //     // Return true if completed, false if not.
+
+    //     return true;  // Just as a placeholder for now
+    // }
 
     // private function checkNextLevel($kelasId, $muridId, $quizId)
     // {

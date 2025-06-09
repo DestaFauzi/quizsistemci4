@@ -83,6 +83,7 @@ $routes->get('murid/detailKelas/(:num)', 'MuridController::detailKelas/$1');
 
 // Routes untuk akses kelas, materi, quiz, dan leaderboard
 $routes->get('murid/masukKelas/(:num)', 'MuridController::masukKelas/$1');
+$routes->get('murid/lanjutkanKelas/(:num)', 'MuridController::lanjutkanKelas/$1');
 $routes->get('murid/aksesMateri/(:segment)/(:segment)', 'MuridController::aksesMateri/$1/$2');
 $routes->get('murid/aksesQuiz/(:num)/(:num)', 'MuridController::aksesQuiz/$1/$2');
 $routes->post('murid/submitQuiz/(:segment)/(:segment)', 'MuridController::submitQuiz/$1/$2');
@@ -95,7 +96,6 @@ $routes->get('murid/leaderboard/(:segment)', 'MuridController::leaderboard/$1');
 
 
 // Routes untuk menuju dashboard murid
-// $routes->get('murid/lanjutkanKelas/(:num)', 'MuridController::lanjutkanKelas/$1');
 // $routes->get('murid/selesaiKelas/(:num)', 'MuridController::selesaiKelas/$1');
 // $routes->get('/murid/kelasSelesai', 'MuridController::kelasSelesai');
 // $routes->get('/murid/quiz/(:num)', 'QuizController::viewQuiz/$1');  // Melihat quiz // Mengirim jawaban
