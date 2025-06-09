@@ -65,6 +65,12 @@ $routes->get('guru/viewQuiz/(:segment)', 'GuruController::viewQuiz/$1');
 //Hapus Materi & Quiz
 $routes->get('guru/hapusMateri/(:num)', 'GuruController::hapusMateri/$1');
 $routes->get('guru/hapusQuiz/(:num)', 'GuruController::hapusQuiz/$1');
+// Hapus Soal
+$routes->get('guru/hapusSoal/(:num)', 'GuruController::hapusSoal/$1');
+// Menampilkan form edit soal berdasarkan id soal
+$routes->get('guru/editSoal/(:num)', 'GuruController::editSoal/$1');
+// Update soal
+$routes->post('guru/updateSoal', 'GuruController::updateSoal');
 
 
 

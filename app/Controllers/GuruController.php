@@ -198,54 +198,112 @@ class GuruController extends Controller
     // Fungsi untuk menampilkan form tambah soal
     public function addSoal($quiz_id)
     {
-        // Ambil data quiz berdasarkan quiz_id
-        $quizModel = new \App\Models\QuizModel();
+        $quizModel = new QuizModel();
         $quiz = $quizModel->find($quiz_id);
 
-        // Ambil jumlah soal yang sudah diatur saat membuat quiz
-        $jumlah_soal = $quiz['jumlah_soal'];  // Ambil jumlah soal dari quiz yang dipilih
+        if (!$quiz) {
+            return redirect()->to('/guru/quiz')->with('error', 'Quiz tidak ditemukan.');
+        }
+
+        // Ambil jumlah soal yang dibolehkan
+        $jumlah_soal = $quiz['jumlah_soal'];
 
         return view('guru/add_soal', [
             'quiz_id' => $quiz_id,
             'jumlah_soal' => $jumlah_soal
         ]);
     }
-    // Fungsi untuk menyimpan soal
-    // Fungsi untuk menyimpan soal
+
+    // Menyimpan soal baru
     public function saveSoal()
     {
         $soalModel = new SoalModel();
 
-        // Dapatkan jumlah soal dari form
-        $jumlah_soal = $this->request->getPost('jumlah_soal');  // Jumlah soal yang diinput
+        $quiz_id = $this->request->getPost('quiz_id');
+        $jumlah_soal = (int)$this->request->getPost('jumlah_soal');
 
-        // Validasi jika jumlah soal ada
-        if (!$jumlah_soal) {
-            return redirect()->back()->with('error', 'Jumlah soal tidak ditentukan!');
+        if (!$quiz_id || !$jumlah_soal) {
+            return redirect()->back()->with('error', 'Data tidak lengkap.');
         }
 
-        // Menyimpan soal untuk setiap soal yang diinput
         for ($i = 1; $i <= $jumlah_soal; $i++) {
-            $soalData = [
-                'quiz_id' => $this->request->getPost('quiz_id'),
-                'soal' => $this->request->getPost('soal_' . $i),
-                'jawaban_a' => $this->request->getPost('jawaban_a_' . $i),
-                'jawaban_b' => $this->request->getPost('jawaban_b_' . $i),
-                'jawaban_c' => $this->request->getPost('jawaban_c_' . $i),
-                'jawaban_d' => $this->request->getPost('jawaban_d_' . $i),
-                'jawaban_benar' => $this->request->getPost('jawaban_benar_' . $i),
-                'poin' => $this->request->getPost('poin_' . $i)
+            $data = [
+                'quiz_id'        => $quiz_id,
+                'soal'           => $this->request->getPost("soal_$i"),
+                'jawaban_a'      => $this->request->getPost("jawaban_a_$i"),
+                'jawaban_b'      => $this->request->getPost("jawaban_b_$i"),
+                'jawaban_c'      => $this->request->getPost("jawaban_c_$i"),
+                'jawaban_d'      => $this->request->getPost("jawaban_d_$i"),
+                'jawaban_benar'  => $this->request->getPost("jawaban_benar_$i"),
+                'poin'           => (int)$this->request->getPost("poin_$i"),
             ];
 
-            // Pastikan soal disimpan dengan benar
-            if (!$soalModel->save($soalData)) {
-                return redirect()->back()->with('error', 'Gagal menyimpan soal.');
+            if (!$soalModel->save($data)) {
+                return redirect()->back()->with('error', 'Gagal menyimpan soal ke-' . $i);
             }
         }
 
-        // Redirect setelah soal berhasil disimpan
-        return redirect()->to('/guru/viewQuiz/' . $this->request->getPost('quiz_id'))->with('success', 'Soal berhasil ditambahkan!');
+        return redirect()->to("/guru/viewQuiz/$quiz_id")->with('success', 'Soal berhasil ditambahkan.');
     }
+
+    // Menampilkan form edit soal
+    public function editSoal($quiz_id)
+    {
+        $quizModel = new QuizModel();
+        $soalModel = new SoalModel();
+
+        // Ambil quiz
+        $quiz = $quizModel->find($quiz_id);
+        if (!$quiz) {
+            return redirect()->back()->with('error', 'Quiz tidak ditemukan.');
+        }
+
+        // Ambil semua soal yang terkait quiz_id
+        $soalList = $soalModel->where('quiz_id', $quiz_id)->findAll();
+
+        $jumlahSoal = $quiz['jumlah_soal'];
+
+        return view('guru/edit_soal', [
+            'soalList' => $soalList,
+            'quiz_id' => $quiz_id,
+            'jumlah_soal' => $jumlahSoal
+        ]);
+    }
+
+    // Menyimpan hasil edit soal
+    public function updateSoal()
+    {
+        $soalModel = new SoalModel();
+
+        $quiz_id = $this->request->getPost('quiz_id');
+        $soal_ids = $this->request->getPost('soal_id');
+        $soals = $this->request->getPost('soal');
+        $jawaban_a = $this->request->getPost('jawaban_a');
+        $jawaban_b = $this->request->getPost('jawaban_b');
+        $jawaban_c = $this->request->getPost('jawaban_c');
+        $jawaban_d = $this->request->getPost('jawaban_d');
+        $jawaban_benar = $this->request->getPost('jawaban_benar');
+        $poin = $this->request->getPost('poin');
+
+        for ($i = 0; $i < count($soal_ids); $i++) {
+            $data = [
+                'id'             => $soal_ids[$i],
+                'quiz_id'        => $quiz_id,
+                'soal'           => $soals[$i],
+                'jawaban_a'      => $jawaban_a[$i],
+                'jawaban_b'      => $jawaban_b[$i],
+                'jawaban_c'      => $jawaban_c[$i],
+                'jawaban_d'      => $jawaban_d[$i],
+                'jawaban_benar'  => $jawaban_benar[$i],
+                'poin'           => (int)$poin[$i],
+            ];
+
+            $soalModel->save($data);
+        }
+
+        return redirect()->to("/guru/viewQuiz/$quiz_id")->with('success', 'Semua soal berhasil diperbarui.');
+    }
+
     public function hapusSoal($id)
     {
         $soalModel = new SoalModel();
