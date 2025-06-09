@@ -529,18 +529,27 @@ class MuridController extends Controller
                 ]);
             }
         } else {
-            $kelasSiswaModel = new KelasSiswaModel();
             $kelasSiswa = $kelasSiswaModel
                 ->where('kelas_id', $kelasId)
                 ->where('murid_id', $muridId)
                 ->first();
 
             if ($kelasSiswa) {
+                $updateData = [
+                    'status_materi' => 'selesai',
+                    'updated_at' => date('Y-m-d H:i:s')
+                ];
+
+                // Jika status_quiz sudah selesai juga → update status kelas jadi selesai
+                if ($kelasSiswa['status_quiz'] === 'selesai') {
+                    $updateData['status'] = 'selesai';
+                }
+
                 $kelasSiswaModel
-                    ->where('id', $kelasSiswa['id'])
-                    ->update(null, ['status_materi' => 'selesai']);
+                    ->update($kelasSiswa['id'], $updateData);
             }
         }
+
 
         return redirect()->to("/murid/detailKelas/{$kelasId}")->with('success', 'Materi berhasil diselesaikan!');
     }
@@ -1015,12 +1024,18 @@ class MuridController extends Controller
                     'updated_at' => date('Y-m-d H:i:s'),
                 ]);
             } else {
-                // Quiz terakhir sudah dikerjakan, update status quiz dan status kelas jadi selesai
-                $kelasSiswaModel->update($kelasSiswa['id'], [
+                // Quiz sudah selesai
+                $updateData = [
                     'status_quiz' => 'selesai',
-                    'status' => 'selesai',
                     'updated_at' => date('Y-m-d H:i:s'),
-                ]);
+                ];
+
+                if ($kelasSiswa['status_materi'] === 'selesai') {
+                    // Semua materi & quiz selesai, update status kelas juga jadi selesai
+                    $updateData['status'] = 'selesai';
+                }
+
+                $kelasSiswaModel->update($kelasSiswa['id'], $updateData);
             }
         }
 
