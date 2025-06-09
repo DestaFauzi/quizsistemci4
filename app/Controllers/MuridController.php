@@ -180,9 +180,12 @@ class MuridController extends Controller
     public function addBadge($kelas_id)
     {
         $badgeModel = new BadgeModel();
+        $kelasModel = new KelasModel();
+        $kelas = $kelasModel->find($kelas_id);
+
         $badgeData = [
             'murid_id' => session()->get('user_id'),
-            'badge_name' => 'Kelas Selesai: ' . $kelas_id,  // Badge berdasarkan nama kelas
+            'badge_name' => "Kelas Selesai: " . $kelas['nama_kelas'],
             'date_earned' => date('Y-m-d H:i:s'),
         ];
         $badgeModel->addBadge($badgeData);
@@ -524,6 +527,8 @@ class MuridController extends Controller
                 // Jika status_quiz sudah selesai juga → update status kelas jadi selesai
                 if ($kelasSiswa['status_quiz'] === 'selesai') {
                     $updateData['status'] = 'selesai';
+
+                    $this->addBadge($kelasId);
                 }
 
                 $kelasSiswaModel
@@ -784,6 +789,7 @@ class MuridController extends Controller
                 if ($kelasSiswa['status_materi'] === 'selesai') {
                     // Semua materi & quiz selesai, update status kelas juga jadi selesai
                     $updateData['status'] = 'selesai';
+                    $this->addBadge($kelasId);
                 }
 
                 $kelasSiswaModel->update($kelasSiswa['id'], $updateData);

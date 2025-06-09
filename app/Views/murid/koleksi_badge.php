@@ -317,7 +317,7 @@
             <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
         </a>
 
-        <?php if (empty($badgeList)): ?>
+        <?php if (empty($badge)): ?>
             <div class="empty-state">
                 <i class="fas fa-trophy"></i>
                 <h3>Anda Belum Memiliki Badge</h3>
