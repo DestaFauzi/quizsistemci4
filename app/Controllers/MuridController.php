@@ -891,6 +891,18 @@ class MuridController extends Controller
                 ->with('error', 'Quiz tidak sesuai dengan kelas.');
         }
 
+        // cek quiz sudah selesai atau belum
+        $quizResultModel = new QuizResultsModel();
+        $quizResult = $quizResultModel
+            ->where('quiz_id', $quizId)
+            ->where('murid_id', $muridId)
+            ->first();
+
+        if ($quizResult) {
+            return redirect()->to(site_url("murid/detailKelas/$kelasId"))
+                ->with('error', 'Anda sudah menyelesaikan quiz ini.');
+        }
+
         // Validasi apakah materi level sebelumnya sudah diakses
         $materiSiswaModel = new MateriSiswaModel();
         $materiModel = new MateriModel();
