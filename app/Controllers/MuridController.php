@@ -266,6 +266,7 @@ class MuridController extends Controller
                 $q['can_access'] = false;
                 $q['is_completed'] = false;
                 $q['score'] = null;
+                $q['max_score'] = 0;
             } else {
                 // Cek apakah quiz ini sudah diselesaikan
                 $quizResult = $quizResultsModel
@@ -275,6 +276,7 @@ class MuridController extends Controller
 
                 $q['is_completed'] = $quizResult !== null;
                 $q['score'] = $quizResult['score'] ?? null;
+                $q['max_score'] = $quizResult['max_score'] ?? 0;
 
                 // Validasi pastikan semua materi dengan level <= quiz sudah selesai
                 $requiredMateri = $materiModel
@@ -943,8 +945,10 @@ class MuridController extends Controller
         $jawaban = $this->request->getPost('jawaban_pilih');
         $soalQuiz = $soalModel->where('quiz_id', $quizId)->findAll();
         $score = 0;
+        $maxScore = 0;
 
         foreach ($soalQuiz as $soal) {
+            $maxScore += $soal['poin'];
             if (isset($jawaban[$soal['id']])) {
                 $isCorrect = false;
 
@@ -987,6 +991,7 @@ class MuridController extends Controller
             'murid_id' => $userId,
             'kelas_id' => $kelasId,
             'score' => $score,
+            'max_score' => $maxScore,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ]);

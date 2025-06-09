@@ -8,7 +8,7 @@ class QuizResultsModel extends Model
 {
     protected $table = 'quiz_results'; // Nama tabel di database
     protected $primaryKey = 'id'; // Primary key
-    protected $allowedFields = ['quiz_id', 'murid_id', 'score', 'kelas_id', 'created_at', 'updated_at'];
+    protected $allowedFields = ['quiz_id', 'murid_id', 'score', 'max_score', 'kelas_id', 'created_at', 'updated_at'];
 
     protected $useTimestamps = true; // Menggunakan created_at dan updated_at
 

@@ -258,6 +258,7 @@
             font-size: 0.9rem;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 0.5rem;
             background-color: rgba(75, 181, 67, 0.1);
             border-radius: 6px;
@@ -265,6 +266,12 @@
 
         .completed-message i {
             margin-right: 0.5rem;
+        }
+
+        .completed-message .score {
+            font-weight: 600;
+            margin-left: 1rem;
+            white-space: nowrap;
         }
 
         .action-buttons {
@@ -430,8 +437,14 @@
                                     <?php elseif ($item['can_access']): ?>
                                         <?php if ($item['is_completed']): ?>
                                             <p class="completed-message">
-                                                <i class="fas fa-check-circle"></i> Quiz ini sudah selesai dengan skor <span style="font-weight: 600; margin-left: 5px;"><?= $item['score']; ?></span>
+                                                <span>
+                                                    <i class="fas fa-check-circle"></i> Quiz ini sudah selesai
+                                                </span>
+                                                <span class="score">
+                                                    <?= $item['score']; ?>/<?= $item['max_score']; ?>
+                                                </span>
                                             </p>
+
                                         <?php else: ?>
                                             <a href="<?= site_url("/murid/aksesQuiz/{$kelas['id']}/{$item['id']}") ?>" class="view-btn">
                                                 <i class="fas fa-play"></i> Kerjakan Quiz
