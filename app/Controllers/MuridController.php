@@ -93,6 +93,8 @@ class MuridController extends Controller
         // Ambil semua kelas yang sudah selesai untuk murid
         $kelasSelesai = $kelasSiswaModel->where('murid_id', $muridId)
             ->where('status', 'selesai')
+            ->where('status_materi', 'selesai')
+            ->where('status_quiz', 'selesai')
             ->findAll();
 
         $kelasList = [];
@@ -102,16 +104,30 @@ class MuridController extends Controller
             $kelas = $kelasModel->find($kelasSiswa['kelas_id']);
             $materiModel = new MateriModel();
             $quizModel = new QuizModel();
+            $quizResultsModel = new QuizResultsModel();
 
             $materi = $materiModel->where('kelas_id', $kelasSiswa['kelas_id'])->findAll();
             $quiz = $quizModel->where('kelas_id', $kelasSiswa['kelas_id'])->findAll();
+            $quizWithScore = [];
+
+            foreach ($quiz as $q) {
+                $result = $quizResultsModel
+                    ->where('quiz_id', $q['id'])
+                    ->where('murid_id', $muridId)
+                    ->first();
+
+                $q['score'] = $result['score'] ?? null;
+                $q['max_score'] = $result['max_score'] ?? null;
+
+                $quizWithScore[] = $q;
+            }
 
             // Menambahkan data kelas beserta materi dan quiz
             $kelasList[] = [
                 'nama_kelas' => $kelas['nama_kelas'],
                 'deskripsi' => $kelas['deskripsi'],
                 'materi' => $materi,
-                'quiz' => $quiz
+                'quiz' => $quizWithScore
             ];
         }
 

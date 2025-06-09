@@ -177,6 +177,12 @@
             margin-right: 10px;
         }
 
+        .score-text {
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
         .action-link {
             display: inline-flex;
             align-items: center;
@@ -287,9 +293,7 @@
                                         <div class="item-meta">
                                             <span class="item-level">Level: <?= esc($item['level']) ?></span>
                                         </div>
-                                        <a href="<?= base_url('murid/viewQuiz/' . esc($item['id'])) ?>" class="action-link">
-                                            <i class="fas fa-eye"></i> Lihat Soal Quiz
-                                        </a>
+                                        <p class="score-text"><?= esc($item['score']) ?>/<?= esc($item['max_score']) ?></p>
                                     </li>
                                 <?php endforeach; ?>
                             </ul>
