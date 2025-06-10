@@ -294,7 +294,7 @@
                                 </td>
                                 <td data-label="Aksi">
                                     <div class="action-buttons">
-                                        <a href="/guru/editStatus/<?= $kelasItem['id'] ?>" class="action-btn edit-btn">
+                                        <a href="/guru/editClass/<?= $kelasItem['id'] ?>" class="action-btn edit-btn">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
                                         <a href="/guru/detailKelas/<?= $kelasItem['id'] ?>" class="action-btn detail-btn">

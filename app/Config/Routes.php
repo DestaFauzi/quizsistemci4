@@ -47,6 +47,8 @@ $routes->group('guru', function ($routes) {
     $routes->get('viewClasses', 'GuruController::viewClasses');
     $routes->get('editStatus/(:num)', 'GuruController::editStatus/$1');
     $routes->post('updateStatus/(:num)', 'GuruController::updateStatus/$1');
+    $routes->get('editClass/(:num)', 'GuruController::editClass/$1');
+    $routes->post('updateClass/(:num)', 'GuruController::updateClass/$1');
     $routes->get('detailKelas/(:num)', 'GuruController::detailKelas/$1');
 
     // Materi
@@ -69,6 +71,9 @@ $routes->group('guru', function ($routes) {
     $routes->get('hapusSoal/(:num)', 'GuruController::hapusSoal/$1');
     $routes->get('editSoal/(:num)', 'GuruController::editSoal/$1');
     $routes->post('updateSoal', 'GuruController::updateSoal');
+
+    // Leaderboard
+    $routes->get('viewLeaderboard/(:num)', 'LeaderboardController::showLeaderboard/$1');
 });
 
 
@@ -95,6 +100,9 @@ $routes->group('murid', function ($routes) {
     $routes->get('aksesQuiz/(:num)/(:num)', 'MuridController::aksesQuiz/$1/$2');
     $routes->post('submitQuiz/(:num)/(:num)', 'MuridController::submitQuiz/$1/$2');
     $routes->post('selesaikanMateri/(:num)/(:num)', 'MuridController::selesaikanMateri/$1/$2');
+
+    // Leaderboard
+    $routes->get('viewLeaderboard/(:num)', 'LeaderboardController::showLeaderboard/$1');
 });
 
 

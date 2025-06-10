@@ -148,6 +148,58 @@ class GuruController extends Controller
         ]);
     }
 
+    public function editClass($kelasId)
+    {
+        $kelas = $this->kelasModel->find($kelasId);
+
+        // Jika kelas tidak ditemukan, redirect dengan pesan error
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+        }
+
+        // Tampilkan view edit_class dan kirim data kelas
+        return view('guru/edit_kelas', ['kelas' => $kelas]);
+    }
+
+    public function updateClass($kelasId)
+    {
+        // Temukan kelas yang akan diperbarui untuk memastikan ada
+        $kelas = $this->kelasModel->find($kelasId);
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+        }
+
+        // Definisikan aturan validasi
+        $rules = [
+            'nama_kelas'   => 'required|min_length[3]|max_length[255]',
+            'deskripsi'    => 'required|min_length[10]',
+            'jumlah_level' => 'required|integer|greater_than[0]',
+            'status'       => 'required|in_list[aktif,non_aktif]',
+        ];
+
+        // Jalankan validasi
+        if (!$this->validate($rules)) {
+            // Jika validasi gagal, kembalikan ke halaman edit dengan input lama dan error
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        // Ambil data dari formulir
+        $data = [
+            'id'           => $kelasId,
+            'nama_kelas'   => $this->request->getPost('nama_kelas'),
+            'deskripsi'    => $this->request->getPost('deskripsi'),
+            'jumlah_level' => (int) $this->request->getPost('jumlah_level'),
+            'status'       => $this->request->getPost('status'),
+        ];
+
+        // Simpan data ke database
+        if ($this->kelasModel->save($data)) {
+            return redirect()->to('/guru/detailKelas/' . $kelasId)->with('success', 'Kelas berhasil diperbarui!');
+        } else {
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui kelas. Silakan coba lagi.');
+        }
+    }
+
     /* Materi Management */
     public function addMateri($kelas_id)
     {
