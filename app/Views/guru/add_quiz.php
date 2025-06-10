@@ -180,7 +180,7 @@
 
         <div class="info-badge">
             <i class="fas fa-info-circle"></i>
-            <span>Anda menambahkan quiz untuk Kelas: <strong><?= esc($kelas_id) ?></strong></span>
+            <span>Anda menambahkan quiz untuk Kelas: <strong><?= esc($kelas['nama_kelas']) ?></strong></span>
         </div>
 
         <?php if (session()->getFlashdata('error')): ?>
@@ -191,7 +191,7 @@
         <?php endif; ?>
 
         <form action="<?= site_url('/guru/saveQuiz') ?>" method="POST">
-            <input type="hidden" name="kelas_id" value="<?= esc($kelas_id) ?>">
+            <input type="hidden" name="kelas_id" value="<?= esc($kelas['id']) ?>">
 
             <div class="form-group">
                 <label for="judul_quiz"><i class="fas fa-heading"></i> Judul Quiz</label>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Materi</title>
+    <title>Edit Materi</title>
     <style>
         :root {
             --primary-color: #4a6bff;
@@ -58,8 +58,7 @@
         }
 
         input[type="text"],
-        input[type="number"],
-        input[type="file"] {
+        input[type="number"] {
             width: 100%;
             padding: 10px;
             border: 1px solid var(--border-color);
@@ -69,8 +68,7 @@
         }
 
         input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="file"]:focus {
+        input[type="number"]:focus {
             border-color: var(--primary-color);
             outline: none;
             box-shadow: 0 0 0 3px rgba(74, 107, 255, 0.2);
@@ -112,6 +110,8 @@
             display: flex;
             gap: 15px;
             margin-top: 20px;
+            justify-content: flex-end;
+            /* Align buttons to the right */
         }
 
         .file-input-container {
@@ -152,12 +152,38 @@
             font-size: 14px;
             color: #666;
         }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: block;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Tambah Materi untuk Kelas: <?= esc($kelas['nama_kelas']) ?></h1>
+        <h1>Edit Materi untuk Kelas: <?= esc($kelas['nama_kelas']) ?></h1>
 
         <div class="form-container">
             <?php if (session()->getFlashdata('success')) : ?>
@@ -182,36 +208,38 @@
                 </div>
             <?php endif; ?>
 
-            <form action="<?= site_url('guru/uploadMateri') ?>" method="POST" enctype="multipart/form-data">
+            <form action="<?= site_url('guru/updateMateri/' . esc($materi['id'])) ?>" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="materi_id" value="<?= esc($materi['id']) ?>">
                 <input type="hidden" name="kelas_id" value="<?= esc($kelas['id']) ?>">
+                <input type="hidden" name="old_file_path" value="<?= esc($materi['file_path']) ?>">
 
                 <div class="form-group">
                     <label for="judul">Judul Materi:</label>
-                    <input type="text" name="judul" id="judul" required value="<?= old('judul') ?>">
+                    <input type="text" name="judul" id="judul" required value="<?= old('judul', $materi['judul']) ?>">
                     <?php if (session()->getFlashdata('errors') && isset(session()->getFlashdata('errors')['judul'])) : ?>
                         <span class="error-message"><?= esc(session()->getFlashdata('errors')['judul']) ?></span>
                     <?php endif; ?>
                 </div>
 
                 <div class="form-group">
-                    <label for="file_materi">File Materi (PDF):</label>
+                    <label for="file_materi">File Materi (PDF, opsional untuk diubah):</label>
                     <div class="file-input-container">
                         <div class="file-input-button">
-                            <span id="file-label">Pilih File PDF</span>
+                            <span id="file-label">Pilih File PDF Baru</span>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                 <polyline points="17 8 12 3 7 8"></polyline>
                                 <line x1="12" y1="3" x2="12" y2="15"></line>
                             </svg>
                         </div>
-                        <input type="file" name="file_materi" id="file_materi" class="file-input" accept="application/pdf" required onchange="updateFileName(this)">
+                        <input type="file" name="file_materi" id="file_materi" class="file-input" accept="application/pdf" onchange="updateFileName(this)">
                     </div>
                     <div id="file-name" class="file-name">
+                        File saat ini: **<?= esc($materi['file_name'] ?? 'N/A') ?>**
                         <?php
-                        // Tampilkan nama file jika ada di old input (biasanya tidak ada untuk file input)
-                        // Namun, pesan error validasi file akan tetap muncul
+                        // Tampilkan nama file jika ada di old input (hanya untuk pesan jika validasi gagal)
                         if (old('file_materi')) {
-                            echo "File sebelumnya: " . esc(old('file_materi'));
+                            echo "<br>File sebelumnya (gagal diunggah): " . esc(old('file_materi'));
                         }
                         ?>
                     </div>
@@ -221,23 +249,22 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="level">Level:</label>
-                    <input type="number" name="level" id="level" min="1" required value="<?= old('level') ?>">
+                    <label for="level">Level (Maksimal: <?= esc($kelas['jumlah_level']) ?>):</label>
+                    <input type="number" name="level" id="level" min="1" required value="<?= old('level', $materi['level']) ?>">
                     <?php if (session()->getFlashdata('errors') && isset(session()->getFlashdata('errors')['level'])) : ?>
                         <span class="error-message"><?= esc(session()->getFlashdata('errors')['level']) ?></span>
                     <?php endif; ?>
                 </div>
                 <div class="form-group">
                     <label for="point">Point:</label>
-                    <input type="number" name="point" id="point" min="0" required value="<?= old('point') ?>">
-                    <?php if (session()->getFlashdata('errors') && isset(session()->getFlashdata('errors')['point'])) : ?>
+                    <input type="number" name="point" id="point" min="0" required value="<?= old('point', $materi['point'] ?? 0) ?>"> <?php if (session()->getFlashdata('errors') && isset(session()->getFlashdata('errors')['point'])) : ?>
                         <span class="error-message"><?= esc(session()->getFlashdata('errors')['point']) ?></span>
                     <?php endif; ?>
                 </div>
 
                 <div class="action-buttons">
-                    <button type="submit" class="button button-primary">Unggah Materi</button>
-                    <a href="/guru/viewClasses" class="button button-secondary">Kembali ke Daftar Kelas</a>
+                    <button type="submit" class="button button-primary">Simpan Perubahan</button>
+                    <a href="<?= site_url('guru/detailKelas/' . esc($kelas['id'])) ?>" class="button button-secondary">Kembali ke Detail Kelas</a>
                 </div>
             </form>
         </div>
@@ -250,23 +277,22 @@
 
             if (input.files.length > 0) {
                 const fileName = input.files[0].name;
-                fileNameContainer.textContent = `File terpilih: ${fileName}`;
+                fileNameContainer.innerHTML = `File terpilih: <strong>${fileName}</strong>`;
                 fileLabel.textContent = "Ubah File";
             } else {
-                fileNameContainer.textContent = '';
-                fileLabel.textContent = 'Pilih File PDF';
+                const oldFileName = "<?= esc($materi['file_name'] ?? 'N/A') ?>";
+                fileNameContainer.innerHTML = `File saat ini: <strong>${oldFileName}</strong>`;
+                fileLabel.textContent = 'Pilih File PDF Baru';
             }
         }
 
-        // Jalankan saat halaman dimuat untuk menampilkan nama file jika ada error sebelumnya
         document.addEventListener('DOMContentLoaded', function() {
             const fileInput = document.getElementById('file_materi');
-            if (fileInput) { // Pastikan elemen ada
+            if (fileInput) {
                 updateFileName(fileInput);
             }
         });
     </script>
 </body>
-
 
 </html>

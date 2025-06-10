@@ -17,6 +17,7 @@
             --white: #ffffff;
             --success: #10b981;
             --warning: #f59e0b;
+            --warning-light: rgb(253, 184, 65);
             --danger: #ef4444;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -148,6 +149,15 @@
             background-color: var(--primary-light);
         }
 
+        .btn-warning {
+            background-color: var(--warning);
+            color: var(--black);
+        }
+
+        .btn-warning:hover {
+            background-color: var(--warning-light);
+        }
+
         .btn-danger {
             background-color: var(--danger);
             color: var(--white);
@@ -203,7 +213,7 @@
         <div class="header">
             <h1>Detail Kelas: <?= esc($kelas['nama_kelas']) ?></h1>
             <p class="class-description"><strong>Deskripsi:</strong> <?= esc($kelas['deskripsi']) ?></p>
-            <p class="class-description"><strong>Status:</strong> 
+            <p class="class-description"><strong>Status:</strong>
                 <?php if ($kelas['status'] == 'aktif'): ?>
                     <span style="color: var(--success);">Aktif</span>
                 <?php else: ?>
@@ -234,6 +244,9 @@
                         <div class="card-actions">
                             <a href="<?= base_url($item['file_path']) ?>" target="_blank" class="btn btn-primary">
                                 <i class="fas fa-eye"></i> Lihat
+                            </a>
+                            <a href="<?= site_url('guru/editMateri/' . esc($item['id'])) ?>" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Edit
                             </a>
                             <a href="<?= site_url('guru/hapusMateri/' . esc($item['id'])) ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus materi ini?')" class="btn btn-danger">
                                 <i class="fas fa-trash"></i> Hapus

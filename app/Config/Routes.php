@@ -53,6 +53,8 @@ $routes->group('guru', function ($routes) {
     $routes->post('saveMateri', 'GuruController::saveMateri');
     $routes->post('uploadMateri', 'GuruController::uploadMateri');
     $routes->get('hapusMateri/(:num)', 'GuruController::hapusMateri/$1');
+    $routes->get('editMateri/(:num)', 'GuruController::editMateri/$1');
+    $routes->post('updateMateri/(:num)', 'GuruController::updateMateri/$1');
 
     // Quiz
     $routes->get('addQuiz/(:num)', 'GuruController::addQuiz/$1');
