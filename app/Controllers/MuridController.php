@@ -15,6 +15,13 @@ use App\Models\SoalModel;
 
 class MuridController extends Controller
 {
+    private $muridId;
+
+    public function __construct()
+    {
+        $this->muridId = session()->get('user_id');
+    }
+
     // Fungsi untuk dashboard murid
     public function dashboard()
     {
@@ -34,7 +41,7 @@ class MuridController extends Controller
 
         // Ambil status kelas untuk murid yang sedang login
         $kelasSiswaModel = new KelasSiswaModel();
-        $muridId = session()->get('user_id');
+        $muridId = $this->muridId;
         $statusKelas = $kelasSiswaModel->getAllKelasByMurid($muridId);
 
         // Gabungkan data kelas dan status kelas murid
@@ -58,7 +65,7 @@ class MuridController extends Controller
     {
         // Ambil kelas yang sedang dalam proses untuk murid yang sedang login
         $kelasSiswaModel = new KelasSiswaModel();
-        $muridId = session()->get('user_id');
+        $muridId = $this->muridId;
 
         // Ambil langsung data kelas yang statusnya 'proses'
         $kelasList = $kelasSiswaModel
@@ -121,7 +128,7 @@ class MuridController extends Controller
     {
         $kelasModel = new KelasModel();
         $kelasSiswaModel = new KelasSiswaModel();
-        $muridId = session()->get('user_id');
+        $muridId = $this->muridId;
 
         // Ambil semua kelas yang sudah selesai untuk murid
         $kelasSelesai = $kelasSiswaModel
@@ -172,7 +179,7 @@ class MuridController extends Controller
     {
         // Ambil semua badge yang telah didapatkan murid
         $badgeModel = new BadgeModel();
-        $badge = $badgeModel->where('murid_id', session()->get('user_id'))->findAll();
+        $badge = $badgeModel->where('murid_id', $this->muridId)->findAll();
 
         return view('murid/koleksi_badge', ['badge' => $badge]);
     }
@@ -185,7 +192,7 @@ class MuridController extends Controller
         $kelas = $kelasModel->find($kelas_id);
 
         $badgeData = [
-            'murid_id' => session()->get('user_id'),
+            'murid_id' => $this->muridId,
             'badge_name' => "Kelas Selesai: " . $kelas['nama_kelas'],
             'date_earned' => date('Y-m-d H:i:s'),
         ];
@@ -202,7 +209,7 @@ class MuridController extends Controller
         $quizResultsModel = new QuizResultsModel();
 
         // Dapatkan ID user dari session
-        $userId = session()->get('user_id');
+        $userId = $this->muridId;
 
         // Validasi kelas
         $kelas = $kelasModel->find($kelas_id);
@@ -418,7 +425,7 @@ class MuridController extends Controller
     public function masukKelas($id)
     {
         $kelasSiswaModel = new KelasSiswaModel();
-        $userId = session()->get('user_id');
+        $userId = $this->muridId;
 
         // Cek apakah sudah terdaftar di kelas
         $existing = $kelasSiswaModel
@@ -452,7 +459,7 @@ class MuridController extends Controller
 
     public function selesaikanMateri($kelasId, $materiId)
     {
-        $muridId = session()->get('user_id');
+        $muridId = $this->muridId;
 
         $materiModel = new MateriModel();
         $materiSiswaModel = new MateriSiswaModel();
@@ -541,7 +548,7 @@ class MuridController extends Controller
     // Fungsi untuk menyelesaikan dan submit quiz
     public function aksesMateri($kelasId, $materiId)
     {
-        $muridId = session()->get('user_id');
+        $muridId = $this->muridId;
 
         $kelasSiswaModel = new KelasSiswaModel();
         $materiModel = new MateriModel();
@@ -610,7 +617,7 @@ class MuridController extends Controller
         $soalModel = new SoalModel();
         $kelasModel = new KelasModel();
 
-        $muridId = session()->get('user_id');
+        $muridId = $this->muridId;
 
         // cek kelas ada atau engga
         $kelas = $kelasModel->find($kelasId);
@@ -708,7 +715,7 @@ class MuridController extends Controller
         $quizResultsModel = new QuizResultsModel();
         $kelasSiswaModel = new KelasSiswaModel();
 
-        $userId = session()->get('user_id');
+        $userId = $this->muridId;
 
         // cek kelas ada atau engga
         $kelas = $kelasModel->find($kelasId);
