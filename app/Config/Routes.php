@@ -88,10 +88,10 @@ $routes->group('murid', function ($routes) {
     // Akses Kelas, Materi, Quiz
     $routes->get('masukKelas/(:num)', 'MuridController::masukKelas/$1');
     $routes->get('lanjutkanKelas/(:num)', 'MuridController::lanjutkanKelas/$1');
-    $routes->get('aksesMateri/(:segment)/(:segment)', 'MuridController::aksesMateri/$1/$2');
+    $routes->get('aksesMateri/(:num)/(:num)', 'MuridController::aksesMateri/$1/$2');
     $routes->get('aksesQuiz/(:num)/(:num)', 'MuridController::aksesQuiz/$1/$2');
-    $routes->post('submitQuiz/(:segment)/(:segment)', 'MuridController::submitQuiz/$1/$2');
-    $routes->post('selesaikanMateri/(:segment)/(:segment)', 'MuridController::selesaikanMateri/$1/$2');
+    $routes->post('submitQuiz/(:num)/(:num)', 'MuridController::submitQuiz/$1/$2');
+    $routes->post('selesaikanMateri/(:num)/(:num)', 'MuridController::selesaikanMateri/$1/$2');
 });
 
 
