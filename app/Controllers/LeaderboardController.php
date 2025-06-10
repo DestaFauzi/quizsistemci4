@@ -10,13 +10,8 @@ use CodeIgniter\Controller;
 
 class LeaderboardController extends Controller
 {
-    public function showLeaderboard($kelasId)
+    protected function validationPage($muridId, $kelasId)
     {
-
-        $muridId = session()->get("user_id");
-
-        $materiSiswaModel = new MateriSiswaModel();
-        $quizResultModel = new QuizResultsModel();
         $kelasModel = new KelasModel();
         $kelasSiswaModel = new KelasSiswaModel();
 
@@ -34,6 +29,20 @@ class LeaderboardController extends Controller
         if (!$kelasSiswa) {
             return redirect()->to(site_url('murid/semuaKelas'))->with('error', 'Anda tidak terdaftar di kelas ini');
         }
+    }
+
+    public function showLeaderboard($kelasId)
+    {
+        $muridId = session()->get("user_id");
+
+        $this->validationPage($muridId, $kelasId);
+
+        $materiSiswaModel = new MateriSiswaModel();
+        $quizResultModel = new QuizResultsModel();
+        $kelasModel = new KelasModel();
+        $kelasSiswaModel = new KelasSiswaModel();
+
+        $groupedData = [];
 
         $allMuridData = $kelasSiswaModel
             ->whereKelas($kelasId)
@@ -42,6 +51,7 @@ class LeaderboardController extends Controller
             ->findAll();
 
         $muridIdList = array_column($allMuridData, 'id');
+        $usernameMap = array_column($allMuridData, 'username', 'id');
 
         $materi = $materiSiswaModel
             ->select('materi_siswa.*, materi.point')
@@ -49,11 +59,6 @@ class LeaderboardController extends Controller
             ->whereIn('materi_siswa.murid_id', $muridIdList) // Ambil semua materi berdasarkan daftar murid_id
             ->where('materi.kelas_id', $kelasId)
             ->findAll();
-
-        $groupedData = [];
-
-        // Mapping id
-        $usernameMap = array_column($allMuridData, 'username', 'id');
 
         foreach ($materi as $entry) {
             $muridId = $entry['murid_id'];
@@ -93,8 +98,10 @@ class LeaderboardController extends Controller
             $groupedData[$muridId]['total_point'] += $quiz['score'];
         }
 
+        $kelasName = $kelasModel->select('nama_kelas')->find($kelasId)['nama_kelas'] ?? 'Unknown';
+
         $leaderboard = [
-            'nama_kelas' => $kelas['nama_kelas'] ?? 'Unknown',
+            'nama_kelas' => $kelasName,
             'data_murid' => array_values($groupedData)
         ];
 
