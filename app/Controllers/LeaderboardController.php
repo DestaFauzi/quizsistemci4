@@ -95,7 +95,7 @@ class LeaderboardController extends Controller
 
         $leaderboard = [
             'nama_kelas' => $kelas['nama_kelas'] ?? 'Unknown',
-            'data_siswa' => array_values($groupedData)
+            'data_murid' => array_values($groupedData)
         ];
 
         // Kirim data leaderboard ke view
