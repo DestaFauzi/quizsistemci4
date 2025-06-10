@@ -78,6 +78,7 @@ $routes->group('murid', function ($routes) {
     $routes->get('kelasDalamProses', 'MuridController::kelasDalamProses');
     $routes->get('kelasSelesai', 'MuridController::kelasSelesai');
     $routes->get('detailKelas/(:num)', 'MuridController::detailKelas/$1');
+    $routes->get('reviewKelas/(:num)', 'MuridController::reviewKelas/$1');
 
     // Badge
     $routes->get('koleksiBadge', 'MuridController::koleksiBadge');

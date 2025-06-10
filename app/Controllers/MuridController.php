@@ -829,6 +829,74 @@ class MuridController extends Controller
         return redirect()->to("/murid/detailKelas/$kelasId")->with('success', "Quiz berhasil diselesaikan! Skor: $score");
     }
 
+    public function reviewKelas($kelas_id)
+    {
+        // Load models
+        $kelasModel = new KelasModel();
+        $kelasSiswaModel = new KelasSiswaModel();
+        $materiSiswaModel = new MateriSiswaModel();
+        $quizResultModel = new QuizResultsModel();
+
+        // Dapatkan ID user dari session
+        $userId = $this->muridId;
+
+        // validasi kelas
+        $kelas = $kelasModel->find($kelas_id);
+        if (!$kelas) {
+            return redirect()->to(site_url('murid/semuaKelas'))->with('error', 'Kelas tidak ditemukan');
+        }
+
+        // cek status siswa di kelas ini
+        $kelasSiswa = $kelasSiswaModel
+            ->whereMuridKelas($userId, $kelas_id)
+            ->first();
+
+        if ($kelasSiswa['status'] !== 'selesai') {
+            return redirect()->to(site_url("murid/aksesKelas/$kelas_id"))->with('error', 'Kelas belum diselesaikan');
+        }
+
+        // ambil data materi dari foreign key materi siswa
+        $materi = $materiSiswaModel
+            ->select('materi_siswa.*, materi.point')
+            ->join('materi', 'materi.id = materi_siswa.materi_id')
+            ->where('materi_siswa.murid_id', $userId)
+            ->where('materi.kelas_id', $kelas_id)
+            ->findAll();
+
+        // hitung total poin dan materi dari materi
+        $totalMateriScore = array_sum(array_column($materi, 'point'));
+        $jumlahMateri = count($materi);
+
+        // ambil hasil kuis
+        $quizResult = $quizResultModel->whereMurid($userId)->where('kelas_id', $kelas_id)->findAll();
+
+        // hitung total quiz
+        $jumlahQuiz = count($quizResult);
+
+        // mendapatkan total score dan max_score
+        $totalQuizScore = 0;
+        $totalMaxScore = 0;
+        foreach ($quizResult as $quiz) {
+            $totalQuizScore += $quiz['score'];
+            $totalMaxScore += $quiz['max_score'];
+        }
+
+        $data = [
+            'kelas' => $kelas,
+            'rangkuman' => [
+                'tanggal_ambil' => $kelasSiswa['created_at'],
+                'total_materi_score' => $totalMateriScore,
+                'total_quiz_score' => $totalQuizScore,
+                'total_max_quiz_score' => $totalMaxScore,
+                'jumlah_materi' => $jumlahMateri,
+                'jumlah_quiz' => $jumlahQuiz,
+                'tanggal_selesai' => $kelasSiswa['updated_at'],
+            ],
+        ];
+
+        return view('murid/review_kelas', $data);
+    }
+
     // --------------------------------------------------------------------------
 
     // Fungsi untuk menyelesaikan kelas
