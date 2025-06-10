@@ -166,6 +166,7 @@ class MuridController extends Controller
             // Menambahkan data kelas beserta materi dan quiz
             $kelasList[] = [
                 'nama_kelas' => $kelas['nama_kelas'],
+                'kelas_id' => $kelas['id'],
                 'deskripsi' => $kelas['deskripsi'],
                 'materi' => $materi,
                 'quiz' => $quizWithScore
