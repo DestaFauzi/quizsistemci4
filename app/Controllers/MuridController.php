@@ -299,8 +299,8 @@ class MuridController extends Controller
                 foreach ($requiredMateri as $materi) {
                     $materiSiswa = $materiSiswaModel
                         ->whereMurid($userId)
-                        ->whereMateri($m['id'])
-                        ->whereStatus('selesai')
+                        ->whereMateri($materi['id'])
+                        ->where('status', 'selesai')
                         ->first();
 
                     if (!$materiSiswa) {
