@@ -30,12 +30,12 @@ class MuridController extends Controller
     {
         // Ambil semua kelas dari tabel kelas yang memiliki status 'aktif'
         $kelasModel = new KelasModel();
-        $kelas = $kelasModel->where('status', 'aktif')->findAll(); // Filter hanya kelas dengan status aktif
+        $kelas = $kelasModel->getAllKelasAktif(); // Filter hanya kelas dengan status aktif
 
         // Ambil status kelas untuk murid yang sedang login
         $kelasSiswaModel = new KelasSiswaModel();
         $muridId = session()->get('user_id');
-        $statusKelas = $kelasSiswaModel->where('murid_id', $muridId)->findAll();
+        $statusKelas = $kelasSiswaModel->getAllKelasByMurid($muridId);
 
         // Gabungkan data kelas dan status kelas murid
         foreach ($kelas as &$item) {
@@ -78,23 +78,23 @@ class MuridController extends Controller
             $kelasId = $kelas['id'];
 
             // Ambil semua materi dan quiz
-            $allMateri = $materiModel->where('kelas_id', $kelasId)->findAll();
-            $allQuiz = $quizModel->where('kelas_id', $kelasId)->findAll();
+            $allMateri = $materiModel->whereKelas($kelasId)->findAll();
+            $allQuiz = $quizModel->whereKelas($kelasId)->findAll();
 
             $totalMateri = count($allMateri);
             $totalQuiz = count($allQuiz);
 
             // Hitung materi yang diselesaikan oleh murid
             $selesaiMateri = $materiSiswaModel
-                ->where('murid_id', $muridId)
-                ->whereIn('materi_id', array_column($allMateri, 'id'))
-                ->where('status', 'selesai')
+                ->whereMurid($muridId)
+                ->whereMateriIn(array_column($allMateri, 'id'))
+                ->whereStatus('selesai')
                 ->countAllResults();
 
             // Hitung quiz yang diselesaikan oleh murid
             $selesaiQuiz = $quizResultModel
-                ->where('murid_id', $muridId)
-                ->whereIn('quiz_id', array_column($allQuiz, 'id'))
+                ->whereMurid($muridId)
+                ->whereQuizIn(array_column($allQuiz, 'id'))
                 ->countAllResults();
 
             // Hitung total progress
@@ -124,10 +124,11 @@ class MuridController extends Controller
         $muridId = session()->get('user_id');
 
         // Ambil semua kelas yang sudah selesai untuk murid
-        $kelasSelesai = $kelasSiswaModel->where('murid_id', $muridId)
-            ->where('status', 'selesai')
-            ->where('status_materi', 'selesai')
-            ->where('status_quiz', 'selesai')
+        $kelasSelesai = $kelasSiswaModel
+            ->whereMurid($muridId)
+            ->whereStatus('selesai')
+            ->whereStatusMateri('selesai')
+            ->whereStatusQuiz('selesai')
             ->findAll();
 
         $kelasList = [];
@@ -139,14 +140,14 @@ class MuridController extends Controller
             $quizModel = new QuizModel();
             $quizResultsModel = new QuizResultsModel();
 
-            $materi = $materiModel->where('kelas_id', $kelasSiswa['kelas_id'])->findAll();
-            $quiz = $quizModel->where('kelas_id', $kelasSiswa['kelas_id'])->findAll();
+            $materi = $materiModel->whereKelas($kelasSiswa['kelas_id'])->findAll();
+            $quiz = $quizModel->whereKelas($kelasSiswa['kelas_id'])->findAll();
             $quizWithScore = [];
 
             foreach ($quiz as $q) {
                 $result = $quizResultsModel
-                    ->where('quiz_id', $q['id'])
-                    ->where('murid_id', $muridId)
+                    ->whereQuiz($q['id'])
+                    ->whereMurid($muridId)
                     ->first();
 
                 $q['score'] = $result['score'] ?? null;
@@ -210,8 +211,8 @@ class MuridController extends Controller
         }
 
         // Cek status siswa di kelas ini
-        $kelasSiswa = $kelasSiswaModel->where('kelas_id', $kelas_id)
-            ->where('murid_id', $userId)
+        $kelasSiswa = $kelasSiswaModel
+            ->whereMuridKelas($userId, $kelas_id)
             ->first();
 
         // Default status jika belum terdaftar
@@ -237,11 +238,9 @@ class MuridController extends Controller
         }
 
         // Dapatkan materi dan quiz untuk kelas ini
-        $materi = $materiModel->where('kelas_id', $kelas_id)
-            ->orderBy('level', 'asc')
-            ->findAll();
+        $materi = $materiModel->getAllByKelasByOrdered($kelas_id, 'level', 'asc');
 
-        $quiz = $quizModel->where('kelas_id', $kelas_id)
+        $quiz = $quizModel->whereKelas($kelas_id)
             ->orderBy('level', 'asc')
             ->findAll();
 
@@ -259,8 +258,8 @@ class MuridController extends Controller
 
                 // cek materi yang terakhir udh selesai atau belum
                 $materiSiswa = $materiSiswaModel
-                    ->where('murid_id', $userId)
-                    ->where('materi_id', $m['id'])
+                    ->whereMurid($userId)
+                    ->whereMateri($m['id'])
                     ->orderBy('created_at', 'desc')
                     ->first();
 
@@ -282,8 +281,8 @@ class MuridController extends Controller
             } else {
                 // Cek apakah quiz ini sudah diselesaikan
                 $quizResult = $quizResultsModel
-                    ->where('murid_id', $userId)
-                    ->where('quiz_id', $q['id'])
+                    ->whereMurid($userId)
+                    ->whereQuiz($q['id'])
                     ->first();
 
                 $q['is_completed'] = $quizResult !== null;
@@ -292,16 +291,16 @@ class MuridController extends Controller
 
                 // Validasi pastikan semua materi dengan level <= quiz sudah selesai
                 $requiredMateri = $materiModel
-                    ->where('kelas_id', $kelas['id'])
-                    ->where('level <=', $q['level'])
+                    ->whereKelas($kelas['id'])
+                    ->whereLevel($q['level'], '<=')
                     ->findAll();
 
                 $semuaMateriSelesai = true;
                 foreach ($requiredMateri as $materi) {
                     $materiSiswa = $materiSiswaModel
-                        ->where('murid_id', $userId)
-                        ->where('materi_id', $materi['id'])
-                        ->where('status', 'selesai')
+                        ->whereMurid($userId)
+                        ->whereMateri($m['id'])
+                        ->whereStatus('selesai')
                         ->first();
 
                     if (!$materiSiswa) {
@@ -312,7 +311,7 @@ class MuridController extends Controller
 
                 // Validasi quiz sebelumnya (level - 1) apakah sudah selesai
                 $quizSebelumnya = $quizResultsModel
-                    ->where('murid_id', $userId)
+                    ->whereMurid($userId)
                     ->join('quiz', 'quiz.id = quiz_results.quiz_id')
                     ->where('quiz.kelas_id', $kelas['id'])
                     ->where('quiz.level', $q['level'] - 1)
@@ -343,7 +342,7 @@ class MuridController extends Controller
         $materiSiswaModel = new MateriSiswaModel();
 
         $materiList = $materiModel
-            ->where('kelas_id', $kelasId)
+            ->whereKelas($kelasId)
             ->orderBy('level', 'asc')
             ->findAll();
 
@@ -356,8 +355,8 @@ class MuridController extends Controller
 
         foreach ($materiList as $materi) {
             $materiSiswa = $materiSiswaModel
-                ->where('materi_id', $materi['id'])
-                ->where('murid_id', $muridId)
+                ->whereMurid($muridId)
+                ->whereMateri($materi['id'])
                 ->first();
 
             if (!$materiSiswa) {
@@ -393,7 +392,7 @@ class MuridController extends Controller
         $quizResultsModel = new QuizResultsModel();
 
         // Dapatkan semua quiz di kelas ini diurutkan berdasarkan level
-        $allQuizzes = $quizModel->where('kelas_id', $kelasId)
+        $allQuizzes = $quizModel->whereKelas($kelasId)
             ->orderBy('level', 'asc')
             ->findAll();
 
@@ -401,8 +400,9 @@ class MuridController extends Controller
 
         foreach ($allQuizzes as $quiz) {
             // Cek apakah user sudah menyelesaikan quiz di level ini
-            $result = $quizResultsModel->where('murid_id', $userId)
-                ->where('quiz_id', $quiz['id'])
+            $result = $quizResultsModel
+                ->whereMurid($userId)
+                ->whereQuiz($quiz['id'])
                 ->first();
 
             if ($result) {
@@ -421,8 +421,8 @@ class MuridController extends Controller
         $userId = session()->get('user_id');
 
         // Cek apakah sudah terdaftar di kelas
-        $existing = $kelasSiswaModel->where('kelas_id', $id)
-            ->where('murid_id', $userId)
+        $existing = $kelasSiswaModel
+            ->whereMuridKelas($userId, $id)
             ->first();
 
         if (!$existing) {
@@ -466,8 +466,7 @@ class MuridController extends Controller
         // cek apakah user terdaftar di kelas
         $kelasSiswaModel = new KelasSiswaModel();
         $kelasSiswa = $kelasSiswaModel
-            ->where('kelas_id', $kelasId)
-            ->where('murid_id', $muridId)
+            ->whereMuridKelas($muridId, $kelasId)
             ->first();
 
         if (!$kelasSiswa) {
@@ -476,8 +475,8 @@ class MuridController extends Controller
 
         // update status materi ini menjadi selesai
         $materiSiswa = $materiSiswaModel
-            ->where('materi_id', $materiId)
-            ->where('murid_id', $muridId)
+            ->whereMurid($muridId)
+            ->whereMateri($materiId)
             ->first();
 
         if ($materiSiswa) {
@@ -493,15 +492,15 @@ class MuridController extends Controller
         // cek materi level berikutnya
         $nextLevel = $materi['level'] + 1;
         $nextMateri = $materiModel
-            ->where('kelas_id', $kelasId)
-            ->where('level', $nextLevel)
+            ->whereKelas($kelasId)
+            ->whereLevel($nextLevel)
             ->first();
 
         if ($nextMateri) {
             // cek apakah siswa sudah punya data untuk next materi
             $existingNext = $materiSiswaModel
-                ->where('materi_id', $nextMateri['id'])
-                ->where('murid_id', $muridId)
+                ->whereMurid($muridId)
+                ->whereMateri($nextMateri['id'])
                 ->first();
 
             if (!$existingNext) {
@@ -514,8 +513,7 @@ class MuridController extends Controller
             }
         } else {
             $kelasSiswa = $kelasSiswaModel
-                ->where('kelas_id', $kelasId)
-                ->where('murid_id', $muridId)
+                ->whereMuridKelas($muridId, $kelasId)
                 ->first();
 
             if ($kelasSiswa) {
@@ -555,8 +553,7 @@ class MuridController extends Controller
         }
 
         $kelasSiswa = $kelasSiswaModel
-            ->where('kelas_id', $kelasId)
-            ->where('murid_id', $muridId)
+            ->whereMuridKelas($muridId, $kelasId)
             ->first();
 
         if (!$kelasSiswa) {
@@ -565,15 +562,15 @@ class MuridController extends Controller
 
         if ($materi['level'] > 1) {
             $prevMateri = $materiModel
-                ->where('kelas_id', $kelasId)
-                ->where('level', $materi['level'] - 1)
+                ->whereKelas($kelasId)
+                ->whereLevel($materi['level'] - 1)
                 ->first();
 
             if ($prevMateri) {
                 $prevProgress = $materiSiswaModel
-                    ->where('materi_id', $prevMateri['id'])
-                    ->where('murid_id', $muridId)
-                    ->where('status', 'selesai')
+                    ->whereMurid($muridId)
+                    ->whereMateri($prevMateri['id'])
+                    ->whereStatus('selesai')
                     ->first();
 
                 if (!$prevProgress) {
@@ -584,8 +581,8 @@ class MuridController extends Controller
 
         // cek apakah sudah ada data di materi_siswa
         $existing = $materiSiswaModel
-            ->where('materi_id', $materiId)
-            ->where('murid_id', $muridId)
+            ->whereMurid($muridId)
+            ->whereMateri($materiId)
             ->first();
 
         if (!$existing) {
@@ -638,8 +635,8 @@ class MuridController extends Controller
         // cek quiz sudah selesai atau belum
         $quizResultModel = new QuizResultsModel();
         $quizResult = $quizResultModel
-            ->where('quiz_id', $quizId)
-            ->where('murid_id', $muridId)
+            ->whereQuiz($quizId)
+            ->whereMurid($muridId)
             ->first();
 
         if ($quizResult) {
@@ -652,16 +649,16 @@ class MuridController extends Controller
         $materiModel = new MateriModel();
 
         $requiredMateri = $materiModel
-            ->where('kelas_id', $kelas['id'])
-            ->where('level <=', $quiz['level']) // semua materi sebelum quiz ini
+            ->whereKelas($kelas['id'])
+            ->whereLevel($quiz['level'], '<=') // semua materi sebelum quiz ini
             ->orderBy('level', 'asc')
             ->findAll();
 
         foreach ($requiredMateri as $materi) {
             $materiSiswa = $materiSiswaModel
-                ->where('murid_id', $muridId)
-                ->where('materi_id', $materi['id'])
-                ->where('status', 'selesai')
+                ->whereMurid($muridId)
+                ->whereMateri($materi['id'])
+                ->whereStatus('selesai')
                 ->first();
 
             if (!$materiSiswa) {
@@ -670,7 +667,7 @@ class MuridController extends Controller
         }
 
         // Ambil soal quiz
-        $soals = $soalModel->where('quiz_id', $quizId)->findAll();
+        $soals = $soalModel->whereQuiz($quizId)->findAll();
 
         return view('murid/akses_quiz', ['quiz' => $quiz, 'soals' => $soals, 'kelasId' => $kelas['id']]);
     }
@@ -708,7 +705,7 @@ class MuridController extends Controller
 
         // Simpan jawaban yang diberikan murid ke tabel quiz_answers
         $jawaban = $this->request->getPost('jawaban_pilih');
-        $soalQuiz = $soalModel->where('quiz_id', $quizId)->findAll();
+        $soalQuiz = $soalModel->whereQuiz($quizId)->findAll();
         $score = 0;
         $maxScore = 0;
 
@@ -762,15 +759,15 @@ class MuridController extends Controller
         ]);
 
         // Update status quiz di kelas_siswa menjadi 'selesai' ketika semua quiz telah diselesaikan
-        $kelasSiswa = $kelasSiswaModel->where('kelas_id', $kelasId)
-            ->where('murid_id', $userId)
+        $kelasSiswa = $kelasSiswaModel
+            ->whereMuridKelas($userId, $kelasId)
             ->first();
 
         if ($kelasSiswa) {
             // Cek quiz lanjutan
             $nextQuiz = $quizModel
-                ->where('kelas_id', $kelasId)
-                ->where('level >', $quiz['level'])
+                ->whereKelas($kelasId)
+                ->whereLevel($quiz['level'], '>')
                 ->first();
 
             if ($nextQuiz) {
