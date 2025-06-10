@@ -851,8 +851,12 @@ class MuridController extends Controller
             ->whereMuridKelas($userId, $kelas_id)
             ->first();
 
+        if (!$kelasSiswa) {
+            return redirect()->to(site_url('murid/semuaKelas'))->with('error', 'Anda tidak terdaftar di kelas ini');
+        }
+
         if ($kelasSiswa['status'] !== 'selesai') {
-            return redirect()->to(site_url("murid/aksesKelas/$kelas_id"))->with('error', 'Kelas belum diselesaikan');
+            return redirect()->to(site_url("murid/detailKelas/$kelas_id"))->with('error', 'Kelas belum diselesaikan');
         }
 
         // ambil data materi dari foreign key materi siswa
