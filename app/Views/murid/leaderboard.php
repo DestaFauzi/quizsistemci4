@@ -18,7 +18,9 @@
                 <tr>
                     <th>Posisi</th>
                     <th>Nama Murid</th>
-                    <th>Skor</th>
+                    <th>Skor Materi</th>
+                    <th>Skor Quiz</th>
+                    <th>Point Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,7 +29,9 @@
                     <tr>
                         <td><?= $rank++ ?></td>
                         <td><?= esc($item['username']) ?></td>
-                        <td><?= esc($item['score']) ?></td>
+                        <td><?= esc($item['total_score_materi']) ?></td>
+                        <td><?= esc($item['total_score_quiz']) ?></td>
+                        <td><?= esc($item['total_point']) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

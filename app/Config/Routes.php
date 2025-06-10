@@ -84,7 +84,7 @@ $routes->group('murid', function ($routes) {
     $routes->get('koleksiBadge', 'MuridController::koleksiBadge');
 
     // Leaderboard
-    $routes->get('leaderboard/(:num)', 'MuridController::leaderboard/$1');
+    $routes->get('leaderboard/(:num)', 'LeaderboardController::showLeaderboard/$1');
 
     // Akses Kelas, Materi, Quiz
     $routes->get('masukKelas/(:num)', 'MuridController::masukKelas/$1');
