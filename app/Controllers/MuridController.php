@@ -207,7 +207,7 @@ class MuridController extends Controller
         // Validasi kelas
         $kelas = $kelasModel->find($kelas_id);
         if (!$kelas) {
-            return redirect()->back()->with('error', 'Kelas tidak ditemukan');
+            return redirect()->to(site_url('murid/semuaKelas'))->with('error', 'Kelas tidak ditemukan');
         }
 
         // Cek status siswa di kelas ini
@@ -460,7 +460,7 @@ class MuridController extends Controller
         // cek materinya ada atau tidak
         $materi = $materiModel->find($materiId);
         if (!$materi) {
-            return redirect()->back()->with('error', 'Materi tidak ditemukan.');
+            return redirect()->to(site_url("murid/detailKelas/$kelasId"))->with('error', 'Materi tidak ditemukan.');
         }
 
         // cek apakah user terdaftar di kelas
@@ -470,7 +470,7 @@ class MuridController extends Controller
             ->first();
 
         if (!$kelasSiswa) {
-            return redirect()->back()->with('error', 'Anda tidak terdaftar dalam kelas ini.');
+            return redirect()->to(site_url("murid/detailKelas/$kelasId"))->with('error', 'Anda tidak terdaftar dalam kelas ini.');
         }
 
         // update status materi ini menjadi selesai
@@ -549,7 +549,7 @@ class MuridController extends Controller
 
         $materi = $materiModel->find($materiId);
         if (!$materi) {
-            return redirect()->back()->with('error', 'Materi tidak ditemukan.');
+            return redirect()->to(site_url("murid/detailKelas/$kelasId"))->with('error', 'Materi tidak ditemukan.');
         }
 
         $kelasSiswa = $kelasSiswaModel
@@ -557,7 +557,7 @@ class MuridController extends Controller
             ->first();
 
         if (!$kelasSiswa) {
-            return redirect()->back()->with('error', 'Anda tidak terdaftar di kelas ini.');
+            return redirect()->to(site_url("murid/detailKelas/$kelasId"))->with('error', 'Anda tidak terdaftar di kelas ini.');
         }
 
         if ($materi['level'] > 1) {
@@ -574,7 +574,7 @@ class MuridController extends Controller
                     ->first();
 
                 if (!$prevProgress) {
-                    return redirect()->back()->with('error', 'Selesaikan materi sebelumnya terlebih dahulu.');
+                    return redirect()->to(site_url("murid/detailKelas/$kelasId"))->with('error', 'Selesaikan materi sebelumnya terlebih dahulu.');
                 }
             }
         }
