@@ -179,9 +179,9 @@ class MuridController extends Controller
     {
         // Ambil semua badge yang telah didapatkan murid
         $badgeModel = new BadgeModel();
-        $badge = $badgeModel->where('murid_id', $this->muridId)->findAll();
+        $badge = $badgeModel->getBadgesByMurid($this->muridId);
 
-        return view('murid/koleksi_badge', ['badge' => $badge]);
+        return view('murid/koleksi_badge', ['badges' => $badge]);
     }
 
     // Fungsi untuk memberikan badge kepada murid
