@@ -276,8 +276,15 @@
 
         .action-buttons {
             display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 1rem;
             margin-top: 2rem;
+        }
+
+        .left-buttons {
+            display: flex;
+            gap: 1rem;
         }
 
         .primary-btn {
@@ -324,6 +331,25 @@
 
         .secondary-btn i {
             margin-right: 0.5rem;
+        }
+
+        .review-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .review-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 238, 84, 0.3);
         }
     </style>
 </head>
@@ -464,23 +490,30 @@
         </div>
 
         <div class="action-buttons">
-            <?php if ($status['status'] == 'belum_dimulai'): ?>
-                <a href="<?= site_url('murid/masukKelas/' . $kelas['id']) ?>" class="primary-btn">
-                    Mulai Belajar <i class="fas fa-arrow-right"></i>
+            <div class="left-buttons">
+                <?php if ($status['status'] == 'belum_dimulai'): ?>
+                    <a href="<?= site_url('murid/masukKelas/' . $kelas['id']) ?>" class="primary-btn">
+                        Mulai Belajar <i class="fas fa-arrow-right"></i>
+                    </a>
+                <?php elseif ($status['status'] == 'proses'): ?>
+                    <span class="primary-btn">
+                        Lanjutkan Belajar <i class="fas fa-arrow-right"></i>
+                    </span>
+                <?php elseif ($status['status'] == 'selesai'): ?>
+                    <a href="<?= site_url('murid/reviewKelas/' . $kelas['id']) ?>" class="primary-btn">
+                        <i class="fas fa-redo" style="margin-right: 5px;"></i> Review Kelas
+                    </a>
+                <?php endif; ?>
+                <a href="/murid/semuaKelas" class="secondary-btn">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Semua Kelas
                 </a>
-            <?php elseif ($status['status'] == 'proses'): ?>
-                <span class="primary-btn">
-                    Lanjutkan Belajar <i class="fas fa-arrow-right"></i>
-                </span>
-            <?php elseif ($status['status'] == 'selesai'): ?>
-                <a href="<?= site_url('murid/reviewKelas/' . $kelas['id']) ?>" class="primary-btn">
-                    <i class="fas fa-redo"></i> Review Kelas
-                </a>
-            <?php endif; ?>
+            </div>
 
-            <a href="/murid/semuaKelas" class="secondary-btn">
-                <i class="fas fa-arrow-left"></i> Kembali ke Semua Kelas
-            </a>
+            <div>
+                <a href="<?= site_url('murid/leaderboard/' . $kelas['id']) ?>" class="review-btn">
+                    <i class="fas fa-chart-line" style="margin-right: 5px;"></i> Show Leaderboard
+                </a>
+            </div>
         </div>
     </div>
 </body>

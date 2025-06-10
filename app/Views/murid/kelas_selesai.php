@@ -82,6 +82,9 @@
         }
 
         .class-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             background-color: white;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -230,6 +233,18 @@
             margin-top: 40px;
         }
 
+        .btn-review {
+            display: inline-block;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
         @media (max-width: 768px) {
             .classes-container {
                 grid-template-columns: 1fr;
@@ -263,40 +278,46 @@
             <div class="classes-container">
                 <?php foreach ($kelasList as $kelas): ?>
                     <div class="class-card">
-                        <span class="completed-badge">Selesai</span>
-                        <h2><?= esc($kelas['nama_kelas']) ?></h2>
-                        <p class="class-description"><?= esc($kelas['deskripsi']) ?></p>
-
-                        <div class="materials-section">
-                            <h3 class="section-title"><i class="fas fa-book-open"></i> Materi</h3>
-                            <ul class="item-list">
-                                <?php foreach ($kelas['materi'] as $item): ?>
-                                    <li class="item-card">
-                                        <h4 class="item-title"><i class="fas fa-file-alt"></i> <?= esc($item['judul']) ?></h4>
-                                        <div class="item-meta">
-                                            <span class="item-level">Level: <?= esc($item['level']) ?></span>
-                                        </div>
-                                        <a href="<?= base_url($item['file_path']) ?>" target="_blank" class="action-link">
-                                            <i class="fas fa-external-link-alt"></i> Lihat Materi
-                                        </a>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
+                        <div>
+                            <span class="completed-badge">Selesai</span>
+                            <h2><?= esc($kelas['nama_kelas']) ?></h2>
+                            <p class="class-description"><?= esc($kelas['deskripsi']) ?></p>
+                            <div class="materials-section">
+                                <h3 class="section-title"><i class="fas fa-book-open"></i> Materi</h3>
+                                <ul class="item-list">
+                                    <?php foreach ($kelas['materi'] as $item): ?>
+                                        <li class="item-card">
+                                            <h4 class="item-title"><i class="fas fa-file-alt"></i> <?= esc($item['judul']) ?></h4>
+                                            <div class="item-meta">
+                                                <span class="item-level">Level: <?= esc($item['level']) ?></span>
+                                            </div>
+                                            <a href="<?= base_url($item['file_path']) ?>" target="_blank" class="action-link">
+                                                <i class="fas fa-external-link-alt"></i> Lihat Materi
+                                            </a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                            <div class="quizzes-section">
+                                <h3 class="section-title"><i class="fas fa-question-circle"></i> Quiz</h3>
+                                <ul class="item-list">
+                                    <?php foreach ($kelas['quiz'] as $item): ?>
+                                        <li class="item-card">
+                                            <h4 class="item-title"><i class="fas fa-clipboard-check"></i> <?= esc($item['judul_quiz']) ?></h4>
+                                            <div class="item-meta">
+                                                <span class="item-level">Level: <?= esc($item['level']) ?></span>
+                                            </div>
+                                            <p class="score-text"><?= esc($item['score']) ?>/<?= esc($item['max_score']) ?></p>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
                         </div>
 
-                        <div class="quizzes-section">
-                            <h3 class="section-title"><i class="fas fa-question-circle"></i> Quiz</h3>
-                            <ul class="item-list">
-                                <?php foreach ($kelas['quiz'] as $item): ?>
-                                    <li class="item-card">
-                                        <h4 class="item-title"><i class="fas fa-clipboard-check"></i> <?= esc($item['judul_quiz']) ?></h4>
-                                        <div class="item-meta">
-                                            <span class="item-level">Level: <?= esc($item['level']) ?></span>
-                                        </div>
-                                        <p class="score-text"><?= esc($item['score']) ?>/<?= esc($item['max_score']) ?></p>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
+                        <div>
+                            <a href="<?= site_url("murid/reviewKelas/{$kelas['kelas_id']}"); ?>" class="btn-review btn-primary">
+                                Lihat Review <i class="far fa-eye"></i>
+                            </a>
                         </div>
                     </div>
                 <?php endforeach; ?>
