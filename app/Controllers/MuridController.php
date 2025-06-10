@@ -632,8 +632,34 @@ class MuridController extends Controller
                 ->with('error', 'Quiz tidak sesuai dengan kelas.');
         }
 
-        // cek quiz sudah selesai atau belum
+        // Jika level > 1, pastikan kuis level sebelumnya sudah selesai
         $quizResultModel = new QuizResultsModel();
+        if ((int)$quiz['level'] > 1) {
+            $prevLevel = $quiz['level'] - 1;
+
+            $prevQuiz = $quizModel
+                ->whereKelas($kelasId)
+                ->whereLevel($prevLevel)
+                ->first();
+
+            if ($prevQuiz) {
+                $prevResult = $quizResultModel
+                    ->whereMurid($muridId)
+                    ->whereQuiz($prevQuiz['id'])
+                    ->first();
+
+                if (!$prevResult) {
+                    return redirect()->to(site_url("murid/detailKelas/$kelasId"))
+                        ->with('error', 'Selesaikan kuis level sebelumnya terlebih dahulu.');
+                }
+            } else {
+                // Kalau kuis level sebelumnya tidak ditemukan di database (bisa aja level quiznya skip)
+                return redirect()->to(site_url("murid/detailKelas/$kelasId"))
+                    ->with('error', 'Kuis level sebelumnya belum tersedia.');
+            }
+        }
+
+        // cek quiz sudah selesai atau belum
         $quizResult = $quizResultModel
             ->whereQuiz($quizId)
             ->whereMurid($muridId)
