@@ -83,50 +83,6 @@ class GuruController extends Controller
         return view('guru/view_classes', ['kelas' => $kelas]);
     }
 
-    public function editStatus($id)
-    {
-        // Mencari kelas berdasarkan ID
-        $kelas = $this->kelasModel->find($id);
-
-        if (!$kelas) {
-            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
-        }
-
-        $statusOptions = ['aktif', 'non_aktif'];
-        return view('guru/edit_status', [
-            'kelas'         => $kelas,
-            'statusOptions' => $statusOptions
-        ]);
-    }
-
-    public function updateStatus($id)
-    {
-        // Aturan validasi untuk status kelas
-        $rules = [
-            'status' => 'required|in_list[aktif,non_aktif]',
-        ];
-
-        // Memvalidasi input status
-        if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-        }
-
-        // Mencari kelas dan memperbarui statusnya
-        $kelas = $this->kelasModel->find($id);
-        if (!$kelas) {
-            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
-        }
-
-        $data = ['status' => $this->request->getPost('status')];
-
-        // Memperbarui status kelas dan memberikan feedback
-        if ($this->kelasModel->update($id, $data)) {
-            return redirect()->to('/guru/viewClasses')->with('success', 'Status kelas berhasil diperbarui!');
-        } else {
-            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui status kelas. Silakan coba lagi.');
-        }
-    }
-
     public function detailKelas($id)
     {
         // Mengambil detail kelas, materi, quiz, dan status murid terkait
@@ -173,7 +129,7 @@ class GuruController extends Controller
         // Definisikan aturan validasi
         $rules = [
             'nama_kelas'   => 'required|min_length[3]|max_length[255]',
-            'deskripsi'    => 'required|min_length[10]',
+            'deskripsi'    => 'required|min_length[10]|max_length[500]',
             'jumlah_level' => 'required|integer|greater_than[0]',
             'status'       => 'required|in_list[aktif,non_aktif]',
         ];
@@ -232,7 +188,7 @@ class GuruController extends Controller
             'level'       => "required|integer|greater_than[0]|less_than_equal_to[{$maxLevel}]",
             'file_materi' => [
                 'uploaded[file_materi]',
-                'mime_in[file_materi,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/gif]',
+                'mime_in[file_materi,application/pdf]',
                 'max_size[file_materi,5000]',
             ],
         ];
@@ -615,24 +571,24 @@ class GuruController extends Controller
         $jumlah_soal = (int)$this->request->getPost('jumlah_soal');
 
         if (!$quiz_id || !$jumlah_soal) {
-            return redirect()->back()->with('error', 'Data tidak lengkap.');
+            return redirect()->to(site_url('/guru/addSoal/' . $quiz_id))->with('error', 'Data tidak lengkap.');
         }
 
         // Membuat aturan validasi dinamis berdasarkan jumlah soal
         $rules = [];
         for ($i = 1; $i <= $jumlah_soal; $i++) {
-            $rules["soal_$i"]           = 'required|min_length[5]';
-            $rules["jawaban_a_$i"]      = 'required|min_length[1]';
-            $rules["jawaban_b_$i"]      = 'required|min_length[1]';
-            $rules["jawaban_c_$i"]      = 'required|min_length[1]';
-            $rules["jawaban_d_$i"]      = 'required|min_length[1]';
+            $rules["soal_$i"]           = 'required|min_length[3]';
+            $rules["jawaban_a_$i"]      = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_b_$i"]      = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_c_$i"]      = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_d_$i"]      = 'required|min_length[1]|max_length[500]';
             $rules["jawaban_benar_$i"]  = 'required|in_list[a,b,c,d]';
             $rules["poin_$i"]           = 'required|integer|greater_than[0]';
         }
 
         // Memvalidasi semua input soal
         if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->to(site_url('/guru/addSoal/' . $quiz_id))->withInput()->with('errors', $this->validator->getErrors());
         }
 
         // Menyimpan setiap soal ke database
@@ -701,11 +657,11 @@ class GuruController extends Controller
         // Buat aturan validasi untuk setiap elemen array
         $rules = [];
         foreach ($soal_ids as $index => $soalId) {
-            $rules["soal.$index"]          = 'required';
-            $rules["jawaban_a.$index"]     = 'required|min_length[1]';
-            $rules["jawaban_b.$index"]     = 'required|min_length[1]';
-            $rules["jawaban_c.$index"]     = 'required|min_length[1]';
-            $rules["jawaban_d.$index"]     = 'required|min_length[1]';
+            $rules["soal.$index"]          = 'required|min_length[3]|max_length[500]';
+            $rules["jawaban_a.$index"]     = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_b.$index"]     = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_c.$index"]     = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_d.$index"]     = 'required|min_length[1]|max_length[500]';
             $rules["jawaban_benar.$index"] = 'required|in_list[a,b,c,d]';
             $rules["poin.$index"]          = 'required|integer|greater_than[0]';
         }
@@ -799,3 +755,48 @@ class GuruController extends Controller
         return view('guru/list_murid', $data);
     }
 }
+
+
+    // public function editStatus($id)
+    // {
+    //     // Mencari kelas berdasarkan ID
+    //     $kelas = $this->kelasModel->find($id);
+
+    //     if (!$kelas) {
+    //         return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+    //     }
+
+    //     $statusOptions = ['aktif', 'non_aktif'];
+    //     return view('guru/edit_status', [
+    //         'kelas'         => $kelas,
+    //         'statusOptions' => $statusOptions
+    //     ]);
+    // }
+
+    // public function updateStatus($id)
+    // {
+    //     // Aturan validasi untuk status kelas
+    //     $rules = [
+    //         'status' => 'required|in_list[aktif,non_aktif]',
+    //     ];
+
+    //     // Memvalidasi input status
+    //     if (!$this->validate($rules)) {
+    //         return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+    //     }
+
+    //     // Mencari kelas dan memperbarui statusnya
+    //     $kelas = $this->kelasModel->find($id);
+    //     if (!$kelas) {
+    //         return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+    //     }
+
+    //     $data = ['status' => $this->request->getPost('status')];
+
+    //     // Memperbarui status kelas dan memberikan feedback
+    //     if ($this->kelasModel->update($id, $data)) {
+    //         return redirect()->to('/guru/viewClasses')->with('success', 'Status kelas berhasil diperbarui!');
+    //     } else {
+    //         return redirect()->back()->withInput()->with('error', 'Gagal memperbarui status kelas. Silakan coba lagi.');
+    //     }
+    // }

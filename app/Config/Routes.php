@@ -45,8 +45,8 @@ $routes->group('guru', function ($routes) {
     $routes->get('createClass', 'GuruController::createClass');
     $routes->post('saveClass', 'GuruController::saveClass');
     $routes->get('viewClasses', 'GuruController::viewClasses');
-    $routes->get('editStatus/(:num)', 'GuruController::editStatus/$1');
-    $routes->post('updateStatus/(:num)', 'GuruController::updateStatus/$1');
+    // $routes->get('editStatus/(:num)', 'GuruController::editStatus/$1');
+    // $routes->post('updateStatus/(:num)', 'GuruController::updateStatus/$1');
     $routes->get('editClass/(:num)', 'GuruController::editClass/$1');
     $routes->post('updateClass/(:num)', 'GuruController::updateClass/$1');
     $routes->get('detailKelas/(:num)', 'GuruController::detailKelas/$1');
