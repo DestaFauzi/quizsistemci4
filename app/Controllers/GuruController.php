@@ -7,6 +7,7 @@ use CodeIgniter\Controller;
 use App\Models\KelasModel;
 use App\Models\MateriModel;
 use App\Models\QuizModel;
+use App\Models\QuizResultsModel;
 use App\Models\SoalModel;
 use App\Models\KelasSiswaModel;
 
@@ -17,6 +18,8 @@ class GuruController extends Controller
     protected $quizModel;
     protected $soalModel;
     protected $kelasSiswaModel;
+    protected $materiSiswaModel;
+    protected $quizResultsModel;
     protected $pager;
 
     public function __construct()
@@ -26,6 +29,8 @@ class GuruController extends Controller
         $this->quizModel = new QuizModel();
         $this->soalModel = new SoalModel();
         $this->kelasSiswaModel = new KelasSiswaModel();
+        $this->materiSiswaModel = new MateriSiswaModel();
+        $this->quizResultsModel = new QuizResultsModel();
         $this->pager = \Config\Services::pager();
     }
 
@@ -758,6 +763,78 @@ class GuruController extends Controller
         ];
 
         return view('guru/list_murid', $data);
+    }
+    public function listMuridMateri($materiId)
+    {
+        if (session()->get('role_id') != 2) {
+            return redirect()->to('/')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
+        $materi = $this->materiModel->find($materiId);
+
+        if (!$materi) {
+            return redirect()->to('/guru/listMateri')->with('error', 'Materi tidak ditemukan.');
+        }
+
+        $perPage = 10;
+
+        $muridMateriList = $this->materiSiswaModel
+            ->select('materi_siswa.id, materi_siswa.murid_id, users.username, users.email, materi_siswa.status, materi_siswa.created_at as waktu_akses, materi_siswa.updated_at as waktu_update')
+            ->join('users', 'users.id = materi_siswa.murid_id')
+            ->where('materi_siswa.materi_id', $materiId)
+            ->orderBy('users.username', 'ASC')
+            ->paginate($perPage);
+
+        $pager = $this->materiSiswaModel->pager;
+        $kelasId = $materi['kelas_id'];
+
+        $data = [
+            'title'             => 'Daftar Murid yang Mengakses Materi: ' . $materi['judul'],
+            'materi'            => $materi,
+            'muridMateriList'   => $muridMateriList,
+            'materiId'          => $materiId,
+            'pager'             => $pager,
+            'kelasId'           => $kelasId
+        ];
+
+        return view('guru/list_murid_materi', $data);
+    }
+
+    public function listMuridQuiz($quizId)
+    {
+        if (session()->get('role_id') != 2) {
+            return redirect()->to('/')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
+        $quiz = $this->quizModel->find($quizId);
+        if (!$quiz) {
+            return redirect()->to('/guru/listQuiz')->with('error', 'Quiz tidak ditemukan.');
+        }
+
+        $perPage = 10;
+
+        $quizScoresList = $this->quizResultsModel
+            ->select('quiz_results.id, quiz_results.murid_id, users.username, users.email, quiz_results.score, quiz_results.max_score, quiz_results.created_at as waktu_selesai')
+            ->join('users', 'users.id = quiz_results.murid_id')
+            ->where('quiz_results.quiz_id', $quizId)
+            // ->where('quiz_results.kelas_id', $kelasId)
+            ->orderBy('users.username', 'ASC')
+            ->orderBy('quiz_results.created_at', 'DESC')
+            ->paginate($perPage);
+
+        $pager = $this->quizResultsModel->pager;
+
+        $kelasId = $quiz['kelas_id'];
+
+        $data = [
+            'title'             => 'Hasil Quiz "' . esc($quiz['judul_quiz']),
+            'quiz'              => $quiz,
+            'quizScoresList'    => $quizScoresList,
+            'quizId'            => $quizId,
+            'kelasId'           => $kelasId,
+            'pager'             => $pager,
+        ];
+        return view('guru/list_murid_quiz', $data);
     }
 }
 

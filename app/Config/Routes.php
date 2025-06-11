@@ -77,6 +77,8 @@ $routes->group('guru', function ($routes) {
 
     // LIST MURID
     $routes->get('viewlistmurid/(:num)', 'GuruController::listMurid/$1');
+    $routes->get('materi/(:num)/murid', 'GuruController::listMuridMateri/$1');
+    $routes->get('quiz/(:num)/murid', 'GuruController::listMuridQuiz/$1');
 });
 
 
