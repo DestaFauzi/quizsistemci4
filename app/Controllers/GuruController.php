@@ -685,4 +685,36 @@ class GuruController extends Controller
             return redirect()->back()->with('error', 'Gagal menghapus soal. Silakan coba lagi.');
         }
     }
+
+    // LIST MURID
+    public function listMurid($kelasId)
+    {
+        // Memastikan hanya guru yang dapat mengakses halaman ini
+        if (session()->get('role_id') != 2) {
+            return redirect()->to('/')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
+        // Ambil detail kelas
+        $kelas = $this->kelasModel->find($kelasId);
+
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+        }
+
+        // Pengambilan data murid
+        $muridList = $this->kelasSiswaModel->select('kelas_siswa.id, kelas_siswa.murid_id, users.username, users.email, kelas_siswa.status, kelas_siswa.created_at as tanggal_join')
+            ->join('users', 'users.id = kelas_siswa.murid_id')
+            ->whereKelas($kelasId)
+            ->orderBy('users.username', 'ASC')
+            ->findAll();
+
+        $data = [
+            'title'     => 'Daftar Murid di Kelas ' . $kelas['nama_kelas'],
+            'kelas'     => $kelas,
+            'muridList' => $muridList,
+            'kelasId'   => $kelasId
+        ];
+
+        return view('guru/list_murid', $data);
+    }
 }

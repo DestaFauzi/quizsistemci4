@@ -74,6 +74,9 @@ $routes->group('guru', function ($routes) {
 
     // Leaderboard
     $routes->get('viewLeaderboard/(:num)', 'LeaderboardController::showLeaderboard/$1');
+
+    // LIST MURID
+    $routes->get('viewlistmurid/(:num)', 'GuruController::listMurid/$1');
 });
 
 
