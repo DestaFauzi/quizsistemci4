@@ -13,9 +13,24 @@ use App\Models\QuizAnswersModel;
 use App\Models\QuizResultsModel;
 use App\Models\SoalModel;
 
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
+use Psr\Log\LoggerInterface;
+
 class MuridController extends Controller
 {
     private $muridId;
+
+    public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
+    {
+        parent::initController($request, $response, $logger);
+
+        // jika belum login atau rolenya bukan murid
+        if (!session()->has('role_id') || session()->get('role_id') != 3) {
+            redirect()->to(site_url('/login'))->send();
+            exit;
+        }
+    }
 
     public function __construct()
     {
@@ -25,11 +40,6 @@ class MuridController extends Controller
     // Fungsi untuk dashboard murid
     public function dashboard()
     {
-        // Memeriksa apakah user memiliki role guru (role_id == 2)
-        if (session()->get('role_id') != 3) {
-            return redirect()->to('/');
-        }
-
         return view('murid/dashboard');
     }
 
