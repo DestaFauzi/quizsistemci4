@@ -235,6 +235,49 @@
             color: white;
         }
 
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .pagination li {
+            list-style: none;
+            margin: 0 6px;
+        }
+
+        .pagination li a,
+        .pagination li span {
+            display: block;
+            padding: 10px 15px;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--primary-blue);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            font-weight: 500;
+        }
+
+        .pagination li a:hover {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            border-color: var(--primary-blue);
+        }
+
+        .pagination li.active span {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            border-color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        .pagination li.disabled span {
+            color: #b0b0b0;
+            cursor: not-allowed;
+            background-color: #f0f0f0;
+            border-color: #eee;
+        }
 
         @media (max-width: 768px) {
             .container {
@@ -251,6 +294,17 @@
             .leaderboard-table td {
                 padding: 10px 12px;
                 font-size: 0.9em;
+            }
+
+            .pagination-links ul {
+                justify-content: center;
+                gap: 5px;
+            }
+
+            .pagination-links li a,
+            .pagination-links li span {
+                padding: 8px 12px;
+                font-size: 0.85em;
             }
         }
 
@@ -276,6 +330,12 @@
             .back-button {
                 padding: 10px 20px;
                 font-size: 0.9em;
+            }
+
+            .pagination-links li a,
+            .pagination-links li span {
+                padding: 6px 10px;
+                font-size: 0.8em;
             }
         }
     </style>
@@ -306,7 +366,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php $no = 1; ?>
+                        <?php
+                        // Menghitung nomor urut awal untuk halaman saat ini
+                        $perPage = $pager->getPerPage(); // Ambil jumlah item per halaman dari objek pager
+                        $currentPage = $pager->getCurrentPage(); // Ambil halaman saat ini
+                        $no = 1 + ($currentPage - 1) * $perPage;
+                        ?>
                         <?php foreach ($muridList as $murid) : ?>
                             <tr>
                                 <td><?= $no++ ?></td>
@@ -332,6 +397,12 @@
                     </tbody>
                 </table>
             </div>
+
+
+            <div class="pagination-container">
+                <?= $pager->links() ?>
+            </div>
+
         <?php endif; ?>
 
         <a href="<?= site_url('guru/detailKelas/' . esc($kelasId)) ?>" class="back-button">

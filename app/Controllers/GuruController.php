@@ -17,6 +17,7 @@ class GuruController extends Controller
     protected $quizModel;
     protected $soalModel;
     protected $kelasSiswaModel;
+    protected $pager;
 
     public function __construct()
     {
@@ -25,6 +26,7 @@ class GuruController extends Controller
         $this->quizModel = new QuizModel();
         $this->soalModel = new SoalModel();
         $this->kelasSiswaModel = new KelasSiswaModel();
+        $this->pager = \Config\Services::pager();
     }
 
     public function dashboard()
@@ -726,30 +728,33 @@ class GuruController extends Controller
     // LIST MURID
     public function listMurid($kelasId)
     {
-        // Memastikan hanya guru yang dapat mengakses halaman ini
         if (session()->get('role_id') != 2) {
             return redirect()->to('/')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
         }
 
-        // Ambil detail kelas
         $kelas = $this->kelasModel->find($kelasId);
 
         if (!$kelas) {
             return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
         }
 
-        // Pengambilan data murid
-        $muridList = $this->kelasSiswaModel->select('kelas_siswa.id, kelas_siswa.murid_id, users.username, users.email, kelas_siswa.status, kelas_siswa.created_at as tanggal_join')
+        $perPage = 10;
+
+        $muridList = $this->kelasSiswaModel
+            ->select('kelas_siswa.id, kelas_siswa.murid_id, users.username, users.email, kelas_siswa.status, kelas_siswa.created_at as tanggal_join')
             ->join('users', 'users.id = kelas_siswa.murid_id')
-            ->whereKelas($kelasId)
+            ->where('kelas_siswa.kelas_id', $kelasId)
             ->orderBy('users.username', 'ASC')
-            ->findAll();
+            ->paginate($perPage);
+
+        $pager = $this->kelasSiswaModel->pager;
 
         $data = [
             'title'     => 'Daftar Murid di Kelas ' . $kelas['nama_kelas'],
             'kelas'     => $kelas,
             'muridList' => $muridList,
-            'kelasId'   => $kelasId
+            'kelasId'   => $kelasId,
+            'pager'     => $pager,
         ];
 
         return view('guru/list_murid', $data);
