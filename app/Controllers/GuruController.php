@@ -275,14 +275,24 @@ class GuruController extends Controller
             // Menyimpan data materi ke database
             if ($this->materiModel->save($materiData)) {
                 $kelasSiswa = $this->kelasSiswaModel;
-                $kelasSiswa
+
+                $existing = $kelasSiswa
                     ->whereKelas($kelasId)
                     ->whereStatus('selesai')
                     ->whereStatusMateri('selesai')
-                    ->update([
-                        'status' => 'proses',
-                        'status_materi' => 'belum_diakses'
-                    ]);
+                    ->findAll();
+
+                if (!empty($existing)) {
+                    $kelasSiswa
+                        ->whereKelas($kelasId)
+                        ->whereStatus('selesai')
+                        ->whereStatusMateri('selesai')
+                        ->set([
+                            'status' => 'proses',
+                            'status_materi' => 'belum_diakses'
+                        ])
+                        ->update();
+                }
 
                 return redirect()->to('/guru/detailKelas/' . $kelasId)->with('success', 'Materi berhasil diunggah!');
             } else {
@@ -404,22 +414,40 @@ class GuruController extends Controller
         if ($this->materiModel->save($materiData)) {
             if ($isFileNew) {
                 $kelasSiswa = $this->kelasSiswaModel;
-                $kelasSiswa
+
+                $existing = $kelasSiswa
                     ->whereKelas($kelasId)
                     ->whereStatus('selesai')
                     ->whereStatusMateri('selesai')
-                    ->update([
-                        'status' => 'proses',
-                        'status_materi' => 'belum_diakses'
-                    ]);
+                    ->findAll();
+
+                if (!empty($existing)) {
+                    $kelasSiswa
+                        ->whereKelas($kelasId)
+                        ->whereStatus('selesai')
+                        ->whereStatusMateri('selesai')
+                        ->set([
+                            'status' => 'proses',
+                            'status_materi' => 'belum_diakses'
+                        ])
+                        ->update();
+                }
 
                 $materiSiswa = new MateriSiswaModel();
-                $materiSiswa
+                $existing = $materiSiswa
                     ->whereMateri($materi_id)
                     ->whereStatus('selesai')
-                    ->update(id: [
-                        'status' => 'belum_diakses'
-                    ]);
+                    ->findAll();
+
+                if (!empty($existing)) {
+                    $materiSiswa
+                        ->whereMateri($materi_id)
+                        ->whereStatus('selesai')
+                        ->set([
+                            'status' => 'belum_diakses'
+                        ])
+                        ->update();
+                }
             }
 
             return redirect()->to('/guru/detailKelas/' . $kelasId)->with('success', 'Materi berhasil diperbarui!');
@@ -503,14 +531,23 @@ class GuruController extends Controller
         // Menyimpan data quiz dan memberikan feedback
         if ($this->quizModel->save($quizData)) {
             $kelasSiswa = $this->kelasSiswaModel;
-            $kelasSiswa
+            $existing = $kelasSiswa
                 ->whereKelas($quizData['kelas_id'])
                 ->whereStatus('selesai')
                 ->whereStatusQuiz('selesai')
-                ->update([
-                    'status' => 'proses',
-                    'status_quiz' => 'belum_diakses'
-                ]);
+                ->findAll();
+
+            if ($existing) {
+                $kelasSiswa
+                    ->whereKelas($quizData['kelas_id'])
+                    ->whereStatus('selesai')
+                    ->whereStatusQuiz('selesai')
+                    ->set([
+                        'status' => 'proses',
+                        'status_quiz' => 'belum_dikerjakan'
+                    ])
+                    ->update();
+            }
 
             $quiz_id = $this->quizModel->getInsertID();
             return redirect()->to('/guru/addSoal/' . $quiz_id)->with('success', 'Quiz berhasil ditambahkan! Sekarang tambahkan soal untuk quiz ini.');
