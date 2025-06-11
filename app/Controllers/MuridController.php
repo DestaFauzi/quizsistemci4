@@ -186,7 +186,7 @@ class MuridController extends Controller
     }
 
     // Fungsi untuk memberikan badge kepada murid
-    public function addBadge($kelas_id)
+    public function addBadge($kelas_id, $type = 'class_completed')
     {
         $badgeModel = new BadgeModel();
         $kelasModel = new KelasModel();
@@ -195,6 +195,7 @@ class MuridController extends Controller
         $badgeData = [
             'murid_id' => $this->muridId,
             'badge_name' => "Kelas Selesai: " . $kelas['nama_kelas'],
+            'badge_type' => $type,
             'date_earned' => date('Y-m-d H:i:s'),
         ];
         $badgeModel->addBadge($badgeData);

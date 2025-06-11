@@ -332,27 +332,36 @@
             <div class="badge-container">
                 <?php foreach ($badges as $badge): ?>
                     <?php
-                    $prefixBadge = 'Kelas Selesai:';
-
                     $badgeName    = $badge['badge_name'];
+                    $badgeType    = $badge['badge_type'];
                     $dateEarned   = $badge['date_earned'];
-                    $isClassDone  = strpos($badgeName, $prefixBadge) === 0;
+
+                    // Cek tipe badge
+                    $isClassDone = $badgeType === 'class_completed';
 
                     $badgeTier        = $badgeName;
                     $badgeTitle       = $badgeName;
                     $badgeDescription = 'Menyelesaikan Sebuah Tantangan';
+                    $badgeIconClass   = 'fas fa-users';
+                    $tierClass        = 'tier-purple';
+                    $iconWrapperClass = 'badge-icon badge-purple';
 
                     if ($isClassDone) {
+                        $prefixBadge = 'Kelas Selesai:';
+
                         $badgeTier        = 'Menyelesaikan Kelas';
-                        $badgeTitle       = trim(substr($badgeName, strlen($prefixBadge)));
+                        $badgeTitle       = trim(str_replace($prefixBadge, '', $badgeName));
                         $badgeDescription = 'Menyelesaikan Sebuah Kelas';
+                        $badgeIconClass   = 'fas fa-book';
+                        $tierClass        = 'tier-gold';
+                        $iconWrapperClass = 'badge-icon badge-gold';
                     }
                     ?>
                     <div class="badge-card">
-                        <div class="badge-icon badge-gold">
-                            <i class="fas fa-book"></i>
+                        <div class="<?= esc($iconWrapperClass) ?>">
+                            <i class="<?= esc($badgeIconClass) ?>"></i>
                         </div>
-                        <span class="badge-tier tier-gold"><?= esc($badgeTier) ?></span>
+                        <span class="badge-tier <?= esc($tierClass) ?>"><?= esc($badgeTier) ?></span>
                         <h3><?= esc($badgeTitle) ?></h3>
                         <p class="badge-description"><?= esc($badgeDescription) ?></p>
                         <p class="badge-date" data-datetime="<?= esc($dateEarned) ?>"></p>

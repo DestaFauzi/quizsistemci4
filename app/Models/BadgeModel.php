@@ -8,7 +8,7 @@ class BadgeModel extends Model
 {
     protected $table = 'badge';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['murid_id', 'badge_name', 'date_earned'];
+    protected $allowedFields = ['murid_id', 'badge_name', 'badge_type', 'date_earned'];
     protected $useTimestamps = true;
 
     // Menambahkan fungsi untuk mendapatkan badge berdasarkan murid
