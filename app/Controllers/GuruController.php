@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\MateriSiswaModel;
 use CodeIgniter\Controller;
 use App\Models\KelasModel;
 use App\Models\MateriModel;
@@ -273,6 +274,16 @@ class GuruController extends Controller
 
             // Menyimpan data materi ke database
             if ($this->materiModel->save($materiData)) {
+                $kelasSiswa = $this->kelasSiswaModel;
+                $kelasSiswa
+                    ->whereKelas($kelasId)
+                    ->whereStatus('selesai')
+                    ->whereStatusMateri('selesai')
+                    ->update([
+                        'status' => 'proses',
+                        'status_materi' => 'belum_diakses'
+                    ]);
+
                 return redirect()->to('/guru/detailKelas/' . $kelasId)->with('success', 'Materi berhasil diunggah!');
             } else {
                 // Menghapus file jika gagal menyimpan ke database
@@ -358,6 +369,7 @@ class GuruController extends Controller
         $filePath = $materi['file_path'];
 
         // Cek apakah ada file baru diunggah dan proses penggantian file
+        $isFileNew = false;
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $directory = ROOTPATH . 'public/uploads/materi/kelas_' . $kelasId . '/';
 
@@ -373,6 +385,8 @@ class GuruController extends Controller
             $fileName = $file->getName(); // Dapatkan nama file baru
             $file->move($directory, $fileName);
             $filePath = 'uploads/materi/kelas_' . $kelasId . '/' . $fileName; // Path file baru
+
+            $isFileNew = true;
         }
 
 
@@ -388,6 +402,26 @@ class GuruController extends Controller
 
         // Memperbarui data materi di database
         if ($this->materiModel->save($materiData)) {
+            if ($isFileNew) {
+                $kelasSiswa = $this->kelasSiswaModel;
+                $kelasSiswa
+                    ->whereKelas($kelasId)
+                    ->whereStatus('selesai')
+                    ->whereStatusMateri('selesai')
+                    ->update([
+                        'status' => 'proses',
+                        'status_materi' => 'belum_diakses'
+                    ]);
+
+                $materiSiswa = new MateriSiswaModel();
+                $materiSiswa
+                    ->whereMateri($materi_id)
+                    ->whereStatus('selesai')
+                    ->update(id: [
+                        'status' => 'belum_diakses'
+                    ]);
+            }
+
             return redirect()->to('/guru/detailKelas/' . $kelasId)->with('success', 'Materi berhasil diperbarui!');
         } else {
             // Jika gagal menyimpan ke DB, dan ada file baru diunggah, hapus file baru tersebut
@@ -468,6 +502,16 @@ class GuruController extends Controller
 
         // Menyimpan data quiz dan memberikan feedback
         if ($this->quizModel->save($quizData)) {
+            $kelasSiswa = $this->kelasSiswaModel;
+            $kelasSiswa
+                ->whereKelas($quizData['kelas_id'])
+                ->whereStatus('selesai')
+                ->whereStatusQuiz('selesai')
+                ->update([
+                    'status' => 'proses',
+                    'status_quiz' => 'belum_diakses'
+                ]);
+
             $quiz_id = $this->quizModel->getInsertID();
             return redirect()->to('/guru/addSoal/' . $quiz_id)->with('success', 'Quiz berhasil ditambahkan! Sekarang tambahkan soal untuk quiz ini.');
         } else {
