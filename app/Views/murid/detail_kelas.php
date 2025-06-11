@@ -509,11 +509,13 @@
                 </a>
             </div>
 
-            <div>
-                <a href="<?= site_url('murid/leaderboard/' . $kelas['id']) ?>" class="review-btn">
-                    <i class="fas fa-chart-line" style="margin-right: 5px;"></i> Show Leaderboard
-                </a>
-            </div>
+            <?php if ($status['status'] != 'belum_dimulai'): ?>
+                <div>
+                    <a href="<?= site_url('murid/leaderboard/' . $kelas['id']) ?>" class="review-btn">
+                        <i class="fas fa-chart-line" style="margin-right: 5px;"></i> Show Leaderboard
+                    </a>
+                </div>
+            <?php endif;  ?>
         </div>
     </div>
 </body>
