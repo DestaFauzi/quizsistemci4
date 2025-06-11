@@ -328,12 +328,12 @@ class MuridController extends Controller
                     }
                 }
 
-                // Validasi quiz sebelumnya (level - 1) apakah sudah selesai
+                // Validasi quiz sebelumnya apakah sudah selesai
                 $quizSebelumnya = $quizResultsModel
                     ->whereMurid($userId)
                     ->join('quiz', 'quiz.id = quiz_results.quiz_id')
                     ->where('quiz.kelas_id', $kelas['id'])
-                    ->where('quiz.level', $q['level'] - 1)
+                    ->where('quiz.level <=', $q['level'] - 1)
                     ->first();
 
                 $quizSebelumnyaSelesai = ($q['level'] == 1) || $quizSebelumnya !== null;
