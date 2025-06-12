@@ -749,47 +749,36 @@ class MuridController extends Controller
         }
 
         // Simpan jawaban yang diberikan murid ke tabel quiz_answers
-        $jawaban = $this->request->getPost('jawaban_pilih');
+        $jawaban = $this->request->getPost('jawaban_pilih') ?? [];
         $soalQuiz = $soalModel->whereQuiz($quizId)->findAll();
         $score = 0;
         $maxScore = 0;
 
         foreach ($soalQuiz as $soal) {
             $maxScore += $soal['poin'];
-            if (isset($jawaban[$soal['id']])) {
-                $isCorrect = false;
 
-                // Cek apakah jawaban benar
-                if ($jawaban[$soal['id']] == $soal['jawaban_benar']) {
-                    $isCorrect = true;
+            $jawabanPilih = null;
+            $isCorrect = false;
+
+            if (isset($jawaban[$soal['id']])) {
+                $jawabanPilih = $jawaban[$soal['id']];
+                $isCorrect = $jawabanPilih == $soal['jawaban_benar'];
+                if ($isCorrect) {
                     $score += $soal['poin'];
                 }
-
-                // Simpan jawaban murid ke tabel quiz_answers
-                $quizAnswersModel->insert([
-                    'quiz_id' => $quizId,
-                    'murid_id' => $userId,
-                    'kelas_id' => $kelasId,
-                    'soal_id' => $soal['id'],
-                    'jawaban_pilih' => $jawaban[$soal['id']],
-                    'is_correct' => $isCorrect,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
-                ]);
-                // Jika jawaban benar, tambahkan poin ke skor
-            } else {
-                // Jika jawaban tidak ada, berarti murid tidak menjawab soal ini
-                // Tidak menambah skor jika tidak ada jawaban    
-                $quizAnswersModel->insert([
-                    'quiz_id' => $quizId,
-                    'murid_id' => $userId,
-                    'soal_id' => $soal['id'],
-                    'kelas_id' => $kelasId,
-                    'jawaban_pilih' => null, // Tidak ada jawaban
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
-                ]);
             }
+
+            // Simpan jawaban murid ke tabel quiz_answers
+            $quizAnswersModel->insert([
+                'quiz_id'        => $quizId,
+                'murid_id'       => $userId,
+                'kelas_id'       => $kelasId,
+                'soal_id'        => $soal['id'],
+                'jawaban_pilih'  => $jawabanPilih,
+                'is_correct'     => $isCorrect,
+                'created_at'     => date('Y-m-d H:i:s'),
+                'updated_at'     => date('Y-m-d H:i:s'),
+            ]);
         }
 
         // Simpan hasil quiz ke tabel quiz_results

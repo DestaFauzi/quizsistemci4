@@ -29,6 +29,7 @@ class CreateQuizAnswersTable extends Migration
             'jawaban_pilih' => [
                 'type' => 'VARCHAR',
                 'constraint' => 255,
+                'null' => true,
             ],
             'is_correct' => [
                 'type' => 'BOOLEAN',
