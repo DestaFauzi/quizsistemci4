@@ -10,6 +10,7 @@ use App\Models\QuizModel;
 use App\Models\QuizResultsModel;
 use App\Models\SoalModel;
 use App\Models\KelasSiswaModel;
+use App\Models\QuizAnswersModel;
 
 class GuruController extends Controller
 {
@@ -702,6 +703,8 @@ class GuruController extends Controller
 
         // Memberikan feedback berdasarkan hasil update soal
         if ($allSoalUpdated) {
+            $this->updateQuizResultsScore($quiz_id);
+
             return redirect()->to("/guru/viewQuiz/$quiz_id")->with('success', 'Semua soal berhasil diperbarui.');
         } else {
             return redirect()->to(site_url('/guru/editSoal/' . $quiz_id))->withInput()->with('error', 'Beberapa soal gagal diperbarui. Silakan periksa input Anda atau coba lagi.');
@@ -724,6 +727,8 @@ class GuruController extends Controller
 
         // Menghapus data soal dari database
         if ($this->soalModel->delete($id)) {
+            $this->updateQuizResultsScore($quiz_id);
+
             return redirect()->to('/guru/viewQuiz/' . $quiz_id)->with('success', 'Soal berhasil dihapus!');
         } else {
             return redirect()->back()->with('error', 'Gagal menghapus soal. Silakan coba lagi.');
@@ -835,6 +840,57 @@ class GuruController extends Controller
             'pager'             => $pager,
         ];
         return view('guru/list_murid_quiz', $data);
+    }
+
+    // VOID FUNGSI
+    protected function updateQuizResultsScore($quiz_id)
+    {
+        $quizAnswersModel = new QuizAnswersModel();
+
+        // Ambil semua soal dan mapping point terbaru
+        $soals = $this->soalModel->whereQuiz($quiz_id)->findAll();
+        if (empty($soals)) return;
+
+        $soalPoints = [];
+        foreach ($soals as $soal) {
+            $soalPoints[$soal['id']] = $soal['poin'];
+        }
+
+        // Hitung max_score baru
+        $newMaxScore = array_sum($soalPoints);
+
+        // Ambil semua hasil quiz untuk quiz ini
+        $quizResults = $this->quizResultsModel->whereQuiz($quiz_id)->findAll();
+
+        foreach ($quizResults as $result) {
+            $quizResultId = $result['id'];
+            $kelasId = $result['kelas_id'];
+            $muridId = $result['murid_id'];
+
+            // Ambil jawaban murid ini saja
+            $answers = $quizAnswersModel
+                ->where('quiz_id', $quiz_id)
+                ->where('kelas_id', $kelasId)
+                ->where('murid_id', $muridId)
+                ->findAll();
+
+            $score = 0;
+
+            foreach ($answers as $answer) {
+                $soalId = $answer['soal_id'];
+                $isCorrect = $answer['is_correct'] ?? 0;
+
+                if ($isCorrect && isset($soalPoints[$soalId])) {
+                    $score += $soalPoints[$soalId];
+                }
+            }
+
+            // Update skor dan max_score dengan nilai baru
+            $this->quizResultsModel->update($quizResultId, [
+                'score' => $score,
+                'max_score' => $newMaxScore
+            ]);
+        }
     }
 }
 
