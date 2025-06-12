@@ -17,11 +17,11 @@ class CreateQuizResultsTable extends Migration
             ],
             'quiz_id' => [
                 'type' => 'INT',
-                'constraint' => 11,
+                'unsigned' => true,
             ],
             'murid_id' => [
                 'type' => 'INT',
-                'constraint' => 11,
+                'unsigned' => true,
             ],
             'score' => [
                 'type' => 'INT',
@@ -39,6 +39,8 @@ class CreateQuizResultsTable extends Migration
 
         // Membuat tabel quiz_results
         $this->forge->addPrimaryKey('id');
+        $this->forge->addForeignKey('quiz_id', 'quiz', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('murid_id', 'users', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('quiz_results');
     }
 
