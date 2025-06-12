@@ -18,6 +18,8 @@
             --success: #10b981;
             --warning: #f59e0b;
             --warning-light: rgb(253, 184, 65);
+            --info: #0ea5e9;
+            --info-light: #38bdf8;
             --danger: #ef4444;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -149,6 +151,15 @@
             background-color: var(--primary-light);
         }
 
+        .btn-info {
+            background-color: var(--info);
+            color: var(--white);
+        }
+
+        .btn-info:hover {
+            background-color: var(--info-light);
+        }
+
         .btn-warning {
             background-color: var(--warning);
             color: var(--black);
@@ -244,6 +255,9 @@
                         <div class="card-actions">
                             <a href="<?= base_url($item['file_path']) ?>" target="_blank" class="btn btn-primary">
                                 <i class="fas fa-eye"></i> Lihat
+                            </a>
+                            <a href="<?= site_url('guru/materi/' . esc($item['id']) . '/murid') ?>" class="btn btn-info">
+                                <i class="fas fa-users"></i> List Murid
                             </a>
                             <a href="<?= site_url('guru/editMateri/' . esc($item['id'])) ?>" class="btn btn-warning">
                                 <i class="fas fa-edit"></i> Edit
