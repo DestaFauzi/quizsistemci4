@@ -295,6 +295,9 @@
                             <a href="<?= base_url('guru/viewQuiz/' . esc($item['id'])) ?>" class="btn btn-primary">
                                 <i class="fas fa-eye"></i> Lihat Quiz
                             </a>
+                            <a href="<?= site_url('guru/quiz/' . esc($item['id']) . '/murid') ?>" class="btn btn-info">
+                                <i class="fas fa-users"></i> List Murid
+                            </a>
                             <a href="<?= site_url('guru/hapusQuiz/' . esc($item['id'])) ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus quiz ini?')" class="btn btn-danger">
                                 <i class="fas fa-trash"></i> Hapus
                             </a>

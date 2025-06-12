@@ -827,7 +827,7 @@ class GuruController extends Controller
         $kelasId = $quiz['kelas_id'];
 
         $data = [
-            'title'             => 'Hasil Quiz "' . esc($quiz['judul_quiz']),
+            'title'             => 'Hasil Quiz "' . esc($quiz['judul_quiz']) . '"',
             'quiz'              => $quiz,
             'quizScoresList'    => $quizScoresList,
             'quizId'            => $quizId,
