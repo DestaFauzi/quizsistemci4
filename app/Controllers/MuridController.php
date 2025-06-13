@@ -344,12 +344,31 @@ class MuridController extends Controller
             $filteredQuiz[] = $q;
         }
 
+        // Mendapatkan URL untuk button lanjutkan belajar
+        $lanjutkanBelajarUrl = '#';
+
+        if ($status['status'] == 'proses') {
+            $nextMaterialIdToAccess = null;
+
+            foreach ($filteredMateri as $m) {
+                if ($m['can_access'] && !$m['is_completed']) {
+                    $nextMaterialIdToAccess = $m['id'];
+                    break;
+                }
+            }
+
+            if ($nextMaterialIdToAccess !== null) {
+                $lanjutkanBelajarUrl = site_url("murid/aksesMateri/{$kelas['id']}/{$nextMaterialIdToAccess}");
+            }
+        }
+
         // Data untuk view
         $data = [
             'kelas' => $kelas,
             'materi' => $filteredMateri,
             'quiz' => $filteredQuiz,
-            'status' => $status
+            'status' => $status,
+            'lanjutkanBelajarUrl' => $lanjutkanBelajarUrl
         ];
 
         return view('murid/detail_kelas', $data);

@@ -496,9 +496,9 @@
                         Mulai Belajar <i class="fas fa-arrow-right"></i>
                     </a>
                 <?php elseif ($status['status'] == 'proses'): ?>
-                    <span class="primary-btn">
+                    <a href="<?= $lanjutkanBelajarUrl ?>" class="primary-btn">
                         Lanjutkan Belajar <i class="fas fa-arrow-right"></i>
-                    </span>
+                    </a>
                 <?php elseif ($status['status'] == 'selesai'): ?>
                     <a href="<?= site_url('murid/reviewKelas/' . $kelas['id']) ?>" class="primary-btn">
                         <i class="fas fa-redo" style="margin-right: 5px;"></i> Review Kelas
