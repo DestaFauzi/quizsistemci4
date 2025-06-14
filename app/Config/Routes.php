@@ -99,7 +99,7 @@ $routes->group('murid', function ($routes) {
     $routes->get('leaderboard/(:num)', 'LeaderboardController::showLeaderboard/$1');
 
     // Akses Kelas, Materi, Quiz
-    $routes->get('masukKelas/(:num)', 'MuridController::masukKelas/$1');
+    $routes->post('masukKelas/(:num)', 'MuridController::masukKelas/$1');
     $routes->get('lanjutkanKelas/(:num)', 'MuridController::lanjutkanKelas/$1');
     $routes->get('aksesMateri/(:num)/(:num)', 'MuridController::aksesMateri/$1/$2');
     $routes->get('aksesQuiz/(:num)/(:num)', 'MuridController::aksesQuiz/$1/$2');

@@ -301,9 +301,13 @@
             text-decoration: none;
         }
 
-        .primary-btn:hover {
+        .primary-btn:hover:not([disabled]) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .primary-btn[disabled] {
+            cursor: not-allowed;
         }
 
         .primary-btn i {
@@ -360,7 +364,11 @@
             <h1 class="class-title"><?= esc($kelas['nama_kelas']) ?></h1>
             <p class="class-description"><?= esc($kelas['deskripsi']) ?></p>
 
-            <?php if ($status['status'] == 'belum_dimulai'): ?>
+            <?php if ($canEnroll == false): ?>
+                <span class="status-badge status-not-started">
+                    <i class="fas fa-lock"></i> Belum Bisa Mengikuti Kelas Ini
+                </span>
+            <?php elseif ($status['status'] == 'belum_dimulai'): ?>
                 <span class="status-badge status-not-started">
                     <i class="fas fa-hourglass-start"></i> Belum Dimulai
                 </span>
@@ -492,9 +500,17 @@
         <div class="action-buttons">
             <div class="left-buttons">
                 <?php if ($status['status'] == 'belum_dimulai'): ?>
-                    <a href="<?= site_url('murid/masukKelas/' . $kelas['id']) ?>" class="primary-btn">
-                        Mulai Belajar <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <?php if ($canEnroll): ?>
+                        <a href="#" class="primary-btn" onclick="event.preventDefault(); document.getElementById('start-class-form').submit();">
+                            Mulai Belajar <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <form id="start-class-form" action="<?= site_url('murid/masukKelas/' . $kelas['id']) ?>" method="post" hidden>
+                        </form>
+                    <?php else: ?>
+                        <a href="#" class="primary-btn" disabled>
+                            Mulai Belajar <i class="fas fa-arrow-right"></i>
+                        </a>
+                    <?php endif; ?>
                 <?php elseif ($status['status'] == 'proses'): ?>
                     <a href="<?= $lanjutkanBelajarUrl ?>" class="primary-btn">
                         Lanjutkan Belajar <i class="fas fa-arrow-right"></i>

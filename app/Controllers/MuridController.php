@@ -264,84 +264,93 @@ class MuridController extends Controller
             ->findAll();
 
         // Validasi akses materi dan quiz berdasarkan level
+        $canEnroll = false;
         $filteredMateri = [];
         $filteredQuiz = [];
 
-        $materiSiswaModel = new MateriSiswaModel();
-        foreach ($materi as $m) {
-            if ($status['status'] == 'belum_dimulai') {
-                $m['can_access'] = false;
-                $m['is_completed'] = false;
-            } elseif ($m['level'] <= $status['level_materi']) {
-                $m['can_access'] = true;
+        if (!empty($materi)) {
+            $canEnroll = true;
 
-                // cek materi yang terakhir udh selesai atau belum
-                $materiSiswa = $materiSiswaModel
-                    ->whereMurid($userId)
-                    ->whereMateri($m['id'])
-                    ->orderBy('created_at', 'desc')
-                    ->first();
+            $materiSiswaModel = new MateriSiswaModel();
+            foreach ($materi as $m) {
+                if ($status['status'] == 'belum_dimulai') {
+                    $m['can_access'] = false;
+                    $m['is_completed'] = false;
+                } elseif ($m['level'] <= $status['level_materi']) {
+                    $m['can_access'] = true;
 
-                $m['is_completed'] = ($materiSiswa && $materiSiswa['status'] === 'selesai');
-            } else {
-                $m['can_access'] = false;
-                $m['is_completed'] = false;
-            }
-
-            $filteredMateri[] = $m;
-        }
-
-        foreach ($quiz as $q) {
-            if ($status['status'] == 'belum_dimulai') {
-                $q['can_access'] = false;
-                $q['is_completed'] = false;
-                $q['score'] = null;
-                $q['max_score'] = 0;
-            } else {
-                // Cek apakah quiz ini sudah diselesaikan
-                $quizResult = $quizResultsModel
-                    ->whereMurid($userId)
-                    ->whereQuiz($q['id'])
-                    ->first();
-
-                $q['is_completed'] = $quizResult !== null;
-                $q['score'] = $quizResult['score'] ?? null;
-                $q['max_score'] = $quizResult['max_score'] ?? 0;
-
-                // Validasi pastikan semua materi dengan level <= quiz sudah selesai
-                $requiredMateri = $materiModel
-                    ->whereKelas($kelas['id'])
-                    ->whereLevel($q['level'], '<=')
-                    ->findAll();
-
-                $semuaMateriSelesai = true;
-                foreach ($requiredMateri as $materi) {
+                    // cek materi yang terakhir udh selesai atau belum
                     $materiSiswa = $materiSiswaModel
                         ->whereMurid($userId)
-                        ->whereMateri($materi['id'])
-                        ->where('status', 'selesai')
+                        ->whereMateri($m['id'])
+                        ->orderBy('created_at', 'desc')
                         ->first();
 
-                    if (!$materiSiswa) {
-                        $semuaMateriSelesai = false;
-                        break;
-                    }
+                    $m['is_completed'] = ($materiSiswa && $materiSiswa['status'] === 'selesai');
+                } else {
+                    $m['can_access'] = false;
+                    $m['is_completed'] = false;
                 }
 
-                // Validasi quiz sebelumnya apakah sudah selesai
-                $quizSebelumnya = $quizResultsModel
-                    ->whereMurid($userId)
-                    ->join('quiz', 'quiz.id = quiz_results.quiz_id')
-                    ->where('quiz.kelas_id', $kelas['id'])
-                    ->where('quiz.level <=', $q['level'] - 1)
-                    ->first();
-
-                $quizSebelumnyaSelesai = ($q['level'] == 1) || $quizSebelumnya !== null;
-
-                $q['can_access'] = $semuaMateriSelesai && $quizSebelumnyaSelesai;
+                $filteredMateri[] = $m;
             }
+        }
 
-            $filteredQuiz[] = $q;
+        if (!empty($quiz)) {
+            $canEnroll = true;
+
+            foreach ($quiz as $q) {
+                if ($status['status'] == 'belum_dimulai') {
+                    $q['can_access'] = false;
+                    $q['is_completed'] = false;
+                    $q['score'] = null;
+                    $q['max_score'] = 0;
+                } else {
+                    // Cek apakah quiz ini sudah diselesaikan
+                    $quizResult = $quizResultsModel
+                        ->whereMurid($userId)
+                        ->whereQuiz($q['id'])
+                        ->first();
+
+                    $q['is_completed'] = $quizResult !== null;
+                    $q['score'] = $quizResult['score'] ?? null;
+                    $q['max_score'] = $quizResult['max_score'] ?? 0;
+
+                    // Validasi pastikan semua materi dengan level <= quiz sudah selesai
+                    $requiredMateri = $materiModel
+                        ->whereKelas($kelas['id'])
+                        ->whereLevel($q['level'], '<=')
+                        ->findAll();
+
+                    $semuaMateriSelesai = true;
+                    foreach ($requiredMateri as $materi) {
+                        $materiSiswa = $materiSiswaModel
+                            ->whereMurid($userId)
+                            ->whereMateri($materi['id'])
+                            ->where('status', 'selesai')
+                            ->first();
+
+                        if (!$materiSiswa) {
+                            $semuaMateriSelesai = false;
+                            break;
+                        }
+                    }
+
+                    // Validasi quiz sebelumnya apakah sudah selesai
+                    $quizSebelumnya = $quizResultsModel
+                        ->whereMurid($userId)
+                        ->join('quiz', 'quiz.id = quiz_results.quiz_id')
+                        ->where('quiz.kelas_id', $kelas['id'])
+                        ->where('quiz.level <=', $q['level'] - 1)
+                        ->first();
+
+                    $quizSebelumnyaSelesai = ($q['level'] == 1) || $quizSebelumnya !== null;
+
+                    $q['can_access'] = $semuaMateriSelesai && $quizSebelumnyaSelesai;
+                }
+
+                $filteredQuiz[] = $q;
+            }
         }
 
         // Mendapatkan URL untuk button lanjutkan belajar
@@ -365,6 +374,7 @@ class MuridController extends Controller
         // Data untuk view
         $data = [
             'kelas' => $kelas,
+            'canEnroll' => $canEnroll,
             'materi' => $filteredMateri,
             'quiz' => $filteredQuiz,
             'status' => $status,
@@ -485,7 +495,7 @@ class MuridController extends Controller
             }
         }
 
-        return redirect()->to("/murid/detailKelas/$id");
+        return redirect()->to(site_url("murid/detailKelas/$id"));
     }
 
     public function selesaikanMateri($kelasId, $materiId)
