@@ -42,7 +42,24 @@ class GuruController extends Controller
             return redirect()->to('/')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
         }
 
-        return view('guru/dashboard');
+        $totalKelas = $this->kelasModel->where('guru_id', session()->get('user_id'))->countAllResults();
+        $totalMateri = $this->materiModel
+            ->join('kelas', 'materi.kelas_id = kelas.id')
+            ->where('kelas.guru_id', session()->get('user_id'))
+            ->countAllResults();
+        $totalQuiz = $this->quizModel
+            ->join('kelas', 'quiz.kelas_id = kelas.id')
+            ->where('kelas.guru_id', session()->get('user_id'))
+            ->countAllResults();
+
+
+        $data = [
+            'totalKelas' => $totalKelas,
+            'totalMateri' => $totalMateri,
+            'totalQuiz' => $totalQuiz
+        ];
+
+        return view('guru/dashboard', $data);
     }
 
     /* Kelas Management */

@@ -379,7 +379,7 @@
                                 <td><?= esc($murid['email']) ?></td>
                                 <td>
                                     <?php
-                                    // Sesuaikan status yang ingin Anda tampilkan
+                                    // Sesuaikan status yang ingin ditampilkan
                                     if ($murid['status'] == 'selesai') {
                                         echo '<span class="badge badge-success">Selesai Kelas</span>';
                                     } elseif ($murid['status'] == 'proses') {
@@ -405,8 +405,8 @@
 
         <?php endif; ?>
 
-        <a href="<?= site_url('guru/detailKelas/' . esc($kelasId)) ?>" class="back-button">
-            Kembali ke Detail Kelas
+        <a href="<?= site_url('guru/viewClasses') ?>" class="back-button">
+            Kembali ke Daftar Kelas
         </a>
     </div>
 </body>

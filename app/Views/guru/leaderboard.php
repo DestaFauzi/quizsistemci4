@@ -350,8 +350,8 @@
             <p class="no-data">Belum ada murid yang terdaftar di kelas ini. Daftarkan murid untuk melihat leaderboard!</p>
         <?php endif; ?>
 
-        <a href="<?= site_url('guru/detailKelas/' . esc($kelasId)) ?>" class="back-button">
-            Kembali ke Detail Kelas
+        <a href="<?= site_url('guru/viewClasses') ?>" class="back-button">
+            Kembali ke Daftar Kelas
         </a>
     </div>
 </body>

@@ -372,7 +372,7 @@
         <?php endif; ?>
 
         <a href="<?= site_url('guru/detailKelas/' . esc($kelasId)) ?>" class="back-button">
-            Kembali ke Detail Kelas
+            Kembali ke Kelas
         </a>
     </div>
 </body>
