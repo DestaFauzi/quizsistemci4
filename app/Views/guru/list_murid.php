@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard Kelas: <?= esc($leaderboard['nama_kelas']) ?></title>
+    <title>Daftar Murid Kelas: <?= esc($kelas['nama_kelas']) ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -18,14 +18,16 @@
             --border-light: #eee;
             --hover-bg: #e9e9e9;
             --success-green: #28a745;
-            --danger-red: #721c24;
+            --danger-red: #dc3545;
+            /* Adjusted for alert */
             --danger-bg: #f8d7da;
             --danger-border: #f5c6cb;
+            --warning-orange: #ffc107;
+            /* For "Belum Dimulai" status */
+            --info-blue: #17a2b8;
+            /* For "Sedang Proses" status */
             --box-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.06);
             --box-shadow-medium: 0 8px 25px rgba(0, 0, 0, 0.1);
-            --highlight-bg: #e0f7fa;
-            /* New: Light blue for highlight */
-            --highlight-border: #80deea;
         }
 
         body {
@@ -61,12 +63,15 @@
         }
 
         .leaderboard-table-container {
+            /* Reusing class name for styling consistency */
             overflow-x: auto;
             border-radius: 8px;
             box-shadow: var(--box-shadow-light);
+            margin-top: 20px;
         }
 
         .leaderboard-table {
+            /* Reusing class name for styling consistency */
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
@@ -107,24 +112,16 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            margin-bottom: 10px;
+            /* Space between rows */
+            display: table-row;
         }
 
-        /* Highlighted row for the current student */
-        .leaderboard-table tbody tr.highlight-row {
-            background-color: var(--highlight-bg);
-            border: 2px solid var(--highlight-border);
-            box-shadow: 0 4px 15px rgba(0, 192, 239, 0.2);
-            /* A bit more prominent shadow */
+        .leaderboard-table tbody tr:not(:last-child) {
+            margin-bottom: 10px;
         }
 
-        .leaderboard-table tbody tr.highlight-row td {
-            font-weight: 600;
-            /* Make text bolder for highlighted row */
-            color: var(--text-dark);
-        }
-
-
-        .leaderboard-table tbody tr:hover:not(.highlight-row) {
+        .leaderboard-table tbody tr:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         }
@@ -139,19 +136,6 @@
             border-top-right-radius: 8px;
         }
 
-        .leaderboard-table td.rank {
-            text-align: center;
-            font-weight: 600;
-            color: var(--text-medium);
-            width: 80px;
-        }
-
-        .leaderboard-table td.total-score {
-            font-weight: 700;
-            color: var(--success-green);
-            font-size: 1.1em;
-        }
-
         .no-data {
             text-align: center;
             padding: 30px;
@@ -162,13 +146,6 @@
             border-radius: 8px;
             margin-top: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .info-text {
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 1.1em;
-            color: var(--text-medium);
         }
 
         .back-button {
@@ -209,12 +186,53 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
         }
 
         .alert-danger {
             background-color: var(--danger-bg);
             color: var(--danger-red);
             border: 1px solid var(--danger-border);
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Badge Styles */
+        .badge {
+            display: inline-block;
+            padding: .35em .65em;
+            font-size: .75em;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: .25rem;
+            transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+        }
+
+        .badge-success {
+            background-color: var(--success-green);
+            color: white;
+        }
+
+        .badge-primary {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: var(--warning-orange);
+            color: var(--text-dark);
+        }
+
+        .badge-secondary {
+            background-color: var(--secondary-gray);
+            color: white;
         }
 
         .pagination {
@@ -278,8 +296,15 @@
                 font-size: 0.9em;
             }
 
-            .leaderboard-table td.rank {
-                width: 60px;
+            .pagination-links ul {
+                justify-content: center;
+                gap: 5px;
+            }
+
+            .pagination-links li a,
+            .pagination-links li span {
+                padding: 8px 12px;
+                font-size: 0.85em;
             }
         }
 
@@ -307,14 +332,10 @@
                 font-size: 0.9em;
             }
 
-            .pagination li {
-                margin: 0 3px;
-            }
-
-            .pagination li a,
-            .pagination li span {
+            .pagination-links li a,
+            .pagination-links li span {
                 padding: 6px 10px;
-                font-size: 0.85em;
+                font-size: 0.8em;
             }
         }
     </style>
@@ -322,7 +343,7 @@
 
 <body>
     <div class="container">
-        <h1>Leaderboard Kelas: <?= esc($leaderboard['nama_kelas']) ?></h1>
+        <h1>Daftar Murid Kelas: <?= esc($kelas['nama_kelas']) ?></h1>
 
         <?php if (session()->getFlashdata('error')) : ?>
             <div class="alert alert-danger">
@@ -330,55 +351,62 @@
             </div>
         <?php endif; ?>
 
-        <?php if ($hasStudents) : ?>
-            <?php if ($currentUserRank !== null) : ?>
-                <p class="info-text">Posisi Anda di leaderboard: Peringkat #<strong><?= esc($currentUserRank) ?></strong> dari <?= esc($totalItems) ?> murid.</p>
-            <?php endif; ?>
-
-            <?php if (!empty($leaderboard['data_murid'])) : ?>
-                <div class="leaderboard-table-container">
-                    <table class="leaderboard-table">
-                        <thead>
-                            <tr>
-                                <th>Peringkat</th>
-                                <th>Username</th>
-                                <th>Total Poin Materi</th>
-                                <th>Total Poin Quiz</th>
-                                <th>Total Keseluruhan Poin</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $loggedInUserId = session()->get('user_id');
-                            foreach ($leaderboard['data_murid'] as $murid) :
-                                $isCurrentUser = ($murid['murid_id'] == $loggedInUserId);
-                                $rowClass = $isCurrentUser ? 'highlight-row' : '';
-                            ?>
-                                <tr class="<?= $rowClass ?>">
-                                    <td class="rank"><?= esc($murid['rank']) ?></td>
-                                    <td><?= esc($murid['username']) ?></td>
-                                    <td><?= esc($murid['total_score_materi']) ?></td>
-                                    <td><?= esc($murid['total_score_quiz']) ?></td>
-                                    <td class="total-score"><?= esc($murid['total_point']) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="pagination-container">
-                    <?= $pager->links() ?>
-                </div>
-
-            <?php else : ?>
-                <p class="no-data">Belum ada aktivitas materi atau kuis di kelas ini. Mari mulai belajar dan raih poin!</p>
-            <?php endif; ?>
+        <?php if (empty($muridList)) : ?>
+            <p class="no-data">Belum ada murid yang bergabung ke kelas ini.</p>
         <?php else : ?>
-            <p class="no-data">Belum ada murid yang terdaftar di kelas ini. Anda bisa menjadi yang pertama!</p>
+            <div class="leaderboard-table-container">
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 10px;">#</th>
+                            <th>Username Murid</th>
+                            <th>Email Murid</th>
+                            <th>Status Bergabung</th>
+                            <th>Tanggal Bergabung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        // Menghitung nomor urut awal untuk halaman saat ini
+                        $perPage = $pager->getPerPage(); // Ambil jumlah item per halaman dari objek pager
+                        $currentPage = $pager->getCurrentPage(); // Ambil halaman saat ini
+                        $no = 1 + ($currentPage - 1) * $perPage;
+                        ?>
+                        <?php foreach ($muridList as $murid) : ?>
+                            <tr>
+                                <td><?= $no++ ?></td>
+                                <td><?= esc($murid['username']) ?></td>
+                                <td><?= esc($murid['email']) ?></td>
+                                <td>
+                                    <?php
+                                    // Sesuaikan status yang ingin ditampilkan
+                                    if ($murid['status'] == 'selesai') {
+                                        echo '<span class="badge badge-success">Selesai Kelas</span>';
+                                    } elseif ($murid['status'] == 'proses') {
+                                        echo '<span class="badge badge-primary">Sedang Proses</span>';
+                                    } elseif ($murid['status'] == 'belum_dimulai') {
+                                        echo '<span class="badge badge-warning">Belum Dimulai</span>';
+                                    } else {
+                                        echo '<span class="badge badge-secondary">' . esc($murid['status']) . '</span>';
+                                    }
+                                    ?>
+                                </td>
+                                <td><?= esc(date('d F Y H:i', strtotime($murid['tanggal_join']))) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+
+            <div class="pagination-container">
+                <?= $pager->links() ?>
+            </div>
+
         <?php endif; ?>
 
-        <a href="<?= site_url('murid/detailKelas/' . esc($kelasId)) ?>" class="back-button">
-            Kembali ke Detail Kelas
+        <a href="<?= site_url('guru/viewClasses') ?>" class="back-button">
+            Kembali ke Daftar Kelas
         </a>
     </div>
 </body>

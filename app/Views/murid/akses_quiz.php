@@ -183,6 +183,14 @@
             display: none;
         }
 
+        .quiz-leave-warning {
+            font-size: 0.9rem;
+            color: var(--gray);
+            text-align: center;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 1rem;
@@ -213,9 +221,10 @@
                 <span class="timer" id="countdown"><?= esc($quiz['waktu']) ?>:00</span>
             </div>
             <p class="time-warning" id="time-warning">Waktu hampir habis! Segera selesaikan quiz.</p>
+            <p class="quiz-leave-warning">Jika Anda meninggalkan halaman, waktu akan tetap berjalan dan tersimpan otomatis.</p>
         </div>
 
-        <form action="<?= base_url('murid/submitQuiz/' . $kelasId . '/' . $quiz['id']) ?>" method="post">
+        <form id="quizForm" action="<?= site_url("murid/submitQuiz/$kelasId/{$quiz['id']}") ?>" method="post">
             <?= csrf_field() ?>
 
             <?php foreach ($soals as $index => $soal): ?>
@@ -242,7 +251,7 @@
                 </div>
             <?php endforeach; ?>
 
-            <button type="submit" class="submit-btn">
+            <button type="submit" class="submit-btn" id="submitBtn">
                 <i class="fas fa-paper-plane"></i> Submit Quiz
             </button>
         </form>
@@ -252,20 +261,32 @@
         // Countdown timer functionality
         document.addEventListener('DOMContentLoaded', function() {
             const durationInMinutes = <?= esc($quiz['waktu']) ?>;
-            let timeLeft = durationInMinutes * 60; // Convert to seconds
             const countdownElement = document.getElementById('countdown');
             const timeWarningElement = document.getElementById('time-warning');
             const quizForm = document.getElementById('quizForm');
+            let isSubmitting = false;
+
+            // take the remaining time from localStorage (if any), or set the initial time
+            let timeLeft = localStorage.getItem('quizTimeLeft');
+            timeLeft = timeLeft ? parseInt(timeLeft) : durationInMinutes * 60;
+
+            // Show confirmation before leaving the page
+            window.addEventListener('beforeunload', function(e) {
+                if (!isSubmitting && timeLeft > 0) {
+                    e.preventDefault();
+                    e.returnValue = 'Anda memiliki quiz yang sedang berjalan. Yakin ingin meninggalkan halaman?';
+                }
+            });
 
             // Update the countdown every second
             const countdownInterval = setInterval(function() {
                 const minutes = Math.floor(timeLeft / 60);
                 let seconds = timeLeft % 60;
-
-                // Add leading zero to seconds if needed
                 seconds = seconds < 10 ? '0' + seconds : seconds;
-
                 countdownElement.textContent = `${minutes}:${seconds}`;
+
+                // save to localStorage every second
+                localStorage.setItem('quizTimeLeft', timeLeft);
 
                 // Show warning when 2 minutes left
                 if (timeLeft <= 120) {
@@ -277,6 +298,10 @@
                 if (timeLeft <= 0) {
                     clearInterval(countdownInterval);
                     countdownElement.textContent = "Waktu habis!";
+                    // User confirmed
+                    isSubmitting = true;
+                    // Clear the timer
+                    localStorage.removeItem('quizTimeLeft');
                     quizForm.submit();
                 }
 
@@ -290,12 +315,18 @@
                 }
             });
 
-            // Show confirmation before leaving the page
-            window.addEventListener('beforeunload', function(e) {
-                if (timeLeft > 0) {
+            document.getElementById('submitBtn').addEventListener('click', function(e) {
+                const confirmed = confirm('Apakah sudah yakin? Anda tidak bisa mengubah jawaban setelah submit');
+                if (!confirmed) {
                     e.preventDefault();
-                    e.returnValue = 'Anda memiliki quiz yang sedang berjalan. Yakin ingin meninggalkan halaman?';
+                    return;
                 }
+
+                // User confirmed
+                isSubmitting = true;
+                // Clear the timer
+                localStorage.removeItem('quizTimeLeft');
+                quizForm.submit();
             });
         });
     </script>

@@ -277,6 +277,8 @@
 
         .earn-badge-btn i {
             margin-left: 0.5rem;
+            font-size: 1rem;
+            margin-bottom: 0;
         }
 
         @media (max-width: 768px) {
@@ -317,7 +319,7 @@
             <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
         </a>
 
-        <?php if (empty($badgeList)): ?>
+        <?php if (empty($badges)): ?>
             <div class="empty-state">
                 <i class="fas fa-trophy"></i>
                 <h3>Anda Belum Memiliki Badge</h3>
@@ -328,74 +330,136 @@
             </div>
         <?php else: ?>
             <div class="badge-container">
-                <!-- Badge 1 - Gold Tier -->
-                <div class="badge-card">
-                    <div class="badge-icon badge-gold">
-                        <i class="fas fa-crown"></i>
-                    </div>
-                    <span class="badge-tier tier-gold">Gold</span>
-                    <h3>Master Bahasa</h3>
-                    <p class="badge-description">Menyelesaikan semua level dengan nilai sempurna</p>
-                    <p class="badge-date">Diperoleh: 15 Mei 2023</p>
-                </div>
+                <?php foreach ($badges as $badge): ?>
+                    <?php
+                    $badgeName    = $badge['badge_name'];
+                    $badgeType    = $badge['badge_type'];
+                    $dateEarned   = $badge['date_earned'];
 
-                <!-- Badge 2 - Silver Tier -->
-                <div class="badge-card">
-                    <div class="badge-icon badge-silver">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <span class="badge-tier tier-silver">Silver</span>
-                    <h3>Ahli Kosakata</h3>
-                    <p class="badge-description">Menguasai lebih dari 500 kosakata baru</p>
-                    <p class="badge-date">Diperoleh: 2 April 2023</p>
-                </div>
+                    // Cek tipe badge
+                    $isClassDone = $badgeType === 'class_completed';
 
-                <!-- Badge 3 - Bronze Tier -->
-                <div class="badge-card">
-                    <div class="badge-icon badge-bronze">
-                        <i class="fas fa-book"></i>
-                    </div>
-                    <span class="badge-tier tier-bronze">Bronze</span>
-                    <h3>Pembaca Cepat</h3>
-                    <p class="badge-description">Menyelesaikan 10 materi membaca dalam waktu singkat</p>
-                    <p class="badge-date">Diperoleh: 10 Maret 2023</p>
-                </div>
+                    $badgeTier        = $badgeName;
+                    $badgeTitle       = $badgeName;
+                    $badgeDescription = 'Menyelesaikan Sebuah Tantangan';
+                    $badgeIconClass   = 'fas fa-users';
+                    $tierClass        = 'tier-purple';
+                    $iconWrapperClass = 'badge-icon badge-purple';
 
-                <!-- Badge 4 - Blue Tier -->
-                <div class="badge-card">
-                    <div class="badge-icon badge-blue">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <span class="badge-tier tier-blue">Spesial</span>
-                    <h3>Pembelajar Aktif</h3>
-                    <p class="badge-description">Login dan belajar selama 30 hari berturut-turut</p>
-                    <p class="badge-date">Diperoleh: 28 Februari 2023</p>
-                </div>
+                    if ($isClassDone) {
+                        $prefixBadge = 'Kelas Selesai:';
 
-                <!-- Badge 5 - Purple Tier -->
-                <div class="badge-card">
-                    <div class="badge-icon badge-purple">
-                        <i class="fas fa-users"></i>
+                        $badgeTier        = 'Menyelesaikan Kelas';
+                        $badgeTitle       = trim(str_replace($prefixBadge, '', $badgeName));
+                        $badgeDescription = 'Menyelesaikan Sebuah Kelas';
+                        $badgeIconClass   = 'fas fa-book';
+                        $tierClass        = 'tier-gold';
+                        $iconWrapperClass = 'badge-icon badge-gold';
+                    }
+                    ?>
+                    <div class="badge-card">
+                        <div class="<?= esc($iconWrapperClass) ?>">
+                            <i class="<?= esc($badgeIconClass) ?>"></i>
+                        </div>
+                        <span class="badge-tier <?= esc($tierClass) ?>"><?= esc($badgeTier) ?></span>
+                        <h3><?= esc($badgeTitle) ?></h3>
+                        <p class="badge-description"><?= esc($badgeDescription) ?></p>
+                        <p class="badge-date" data-datetime="<?= esc($dateEarned) ?>"></p>
                     </div>
-                    <span class="badge-tier tier-purple">Komunitas</span>
-                    <h3>Kontributor Top</h3>
-                    <p class="badge-description">Membantu 10 siswa lain dalam forum diskusi</p>
-                    <p class="badge-date">Diperoleh: 15 Februari 2023</p>
-                </div>
-
-                <!-- Badge 6 - Gold Tier -->
-                <div class="badge-card">
-                    <div class="badge-icon badge-gold">
-                        <i class="fas fa-medal"></i>
-                    </div>
-                    <span class="badge-tier tier-gold">Gold</span>
-                    <h3>Juara Quiz</h3>
-                    <p class="badge-description">Mendapatkan nilai tertinggi dalam quiz bulanan</p>
-                    <p class="badge-date">Diperoleh: 31 Januari 2023</p>
-                </div>
+                <?php endforeach; ?>
             </div>
         <?php endif; ?>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.badge-date').forEach(el => {
+                const raw = el.dataset.datetime;
+                if (!raw) return;
+
+                // ubah spasi jadi 'T' supaya format ISO
+                const isoString = raw.replace(' ', 'T');
+                const dateObj = new Date(isoString);
+
+                // format Indonesia
+                const formatter = new Intl.DateTimeFormat('id-ID', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                });
+
+                el.textContent = `Diperoleh: ${formatter.format(dateObj)}`;
+            });
+        });
+    </script>
+
+
+    <!-- Badge 1 - Gold Tier
+    <div class="badge-card">
+        <div class="badge-icon badge-gold">
+            <i class="fas fa-crown"></i>
+        </div>
+        <span class="badge-tier tier-gold">Gold</span>
+        <h3>Master Bahasa</h3>
+        <p class="badge-description">Menyelesaikan semua level dengan nilai sempurna</p>
+        <p class="badge-date">Diperoleh: 15 Mei 2023</p>
+    </div> -->
+
+    <!-- Badge 2 - Silver Tier
+    <div class="badge-card">
+        <div class="badge-icon badge-silver">
+            <i class="fas fa-star"></i>
+        </div>
+        <span class="badge-tier tier-silver">Silver</span>
+        <h3>Ahli Kosakata</h3>
+        <p class="badge-description">Menguasai lebih dari 500 kosakata baru</p>
+        <p class="badge-date">Diperoleh: 2 April 2023</p>
+    </div> -->
+
+    <!-- Badge 3 - Bronze Tier
+    <div class="badge-card">
+        <div class="badge-icon badge-bronze">
+            <i class="fas fa-book"></i>
+        </div>
+        <span class="badge-tier tier-bronze">Bronze</span>
+        <h3>Pembaca Cepat</h3>
+        <p class="badge-description">Menyelesaikan 10 materi membaca dalam waktu singkat</p>
+        <p class="badge-date">Diperoleh: 10 Maret 2023</p>
+    </div> -->
+
+    <!-- Badge 4 - Blue Tier
+    <div class="badge-card">
+        <div class="badge-icon badge-blue">
+            <i class="fas fa-bolt"></i>
+        </div>
+        <span class="badge-tier tier-blue">Spesial</span>
+        <h3>Pembelajar Aktif</h3>
+        <p class="badge-description">Login dan belajar selama 30 hari berturut-turut</p>
+        <p class="badge-date">Diperoleh: 28 Februari 2023</p>
+    </div> -->
+
+    <!-- Badge 5 - Purple Tier
+    <div class="badge-card">
+        <div class="badge-icon badge-purple">
+            <i class="fas fa-users"></i>
+        </div>
+        <span class="badge-tier tier-purple">Komunitas</span>
+        <h3>Kontributor Top</h3>
+        <p class="badge-description">Membantu 10 siswa lain dalam forum diskusi</p>
+        <p class="badge-date">Diperoleh: 15 Februari 2023</p>
+    </div> -->
+
+    <!-- Badge 6 - Gold Tier
+    <div class="badge-card">
+        <div class="badge-icon badge-gold">
+            <i class="fas fa-medal"></i>
+        </div>
+        <span class="badge-tier tier-gold">Gold</span>
+        <h3>Juara Quiz</h3>
+        <p class="badge-description">Mendapatkan nilai tertinggi dalam quiz bulanan</p>
+        <p class="badge-date">Diperoleh: 31 Januari 2023</p>
+    </div> -->
+
 </body>
 
 </html>

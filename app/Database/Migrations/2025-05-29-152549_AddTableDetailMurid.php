@@ -51,6 +51,6 @@ class AddTableDetailMurid extends Migration
 
     public function down()
     {
-        //
+        $this->forge->dropTable('detail_murid');
     }
 }

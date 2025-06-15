@@ -145,6 +145,10 @@
         </div>
 
         <h2>Soal-Soal Quiz</h2>
+        <!-- Button untuk menambah soal -->
+        <a href="<?= site_url('guru/editSoal/' . esc($quiz['id'])) ?>">
+            <button class="button button-primary">Edit Soal</button>
+        </a>
         <?php if (empty($soal)): ?>
             <div class="no-questions">
                 <p>Belum ada soal untuk quiz ini.</p>

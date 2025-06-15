@@ -486,7 +486,7 @@
                     <div class="stat-icon">
                         <i class="fas fa-tags"></i>
                     </div>
-                    <h3>24</h3>
+                    <h3><?= $totalKelas; ?></h3>
                     <p>Banyak Kelas</p>
                 </div>
 
@@ -494,7 +494,7 @@
                     <div class="stat-icon">
                         <i class="fas fa-book-open"></i>
                     </div>
-                    <h3>1,248</h3>
+                    <h3><?= $totalMateri; ?></h3>
                     <p>Total Materi</p>
                 </div>
 
@@ -504,7 +504,7 @@
                     <div class="stat-icon">
                         <i class="fas fa-user-edit"></i>
                     </div>
-                    <h3>100</h3>
+                    <h3><?= $totalQuiz; ?></h3>
                     <p>Jumlah Quiz</p>
                 </div>
             </div>

@@ -53,7 +53,7 @@ class CreateSoalTable extends Migration
             ],
         ]);
         $this->forge->addPrimaryKey('id');
-        $this->forge->addForeignKey('quiz_id', 'quiz', 'id');
+        $this->forge->addForeignKey('quiz_id', 'quiz', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('soal');
     }
 

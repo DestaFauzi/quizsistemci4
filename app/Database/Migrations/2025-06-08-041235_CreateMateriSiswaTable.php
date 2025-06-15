@@ -4,18 +4,17 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateQuizResultsTable extends Migration
+class CreateMateriSiswaTable extends Migration
 {
     public function up()
     {
-        // Membuat tabel quiz_results
         $this->forge->addField([
             'id' => [
                 'type' => 'INT',
+                'unsigned' => true,
                 'auto_increment' => true,
-                'constraint' => 11,
             ],
-            'quiz_id' => [
+            'materi_id' => [
                 'type' => 'INT',
                 'unsigned' => true,
             ],
@@ -23,30 +22,30 @@ class CreateQuizResultsTable extends Migration
                 'type' => 'INT',
                 'unsigned' => true,
             ],
-            'score' => [
-                'type' => 'INT',
-                'constraint' => 11,
+            'status' => [
+                'type' => 'ENUM',
+                'constraint' => ['belum_diakses', 'sedang_dibaca', 'selesai'],
+                'default' => 'belum_diakses',
             ],
-            'created_at' => [
+            'created_at'     => [
                 'type' => 'DATETIME',
                 'null' => true,
+                'default' => date('Y-m-d H:i:s'),
             ],
-            'updated_at' => [
+            'updated_at'     => [
                 'type' => 'DATETIME',
                 'null' => true,
+                'default' => date('Y-m-d H:i:s'),
             ],
         ]);
-
-        // Membuat tabel quiz_results
         $this->forge->addPrimaryKey('id');
-        $this->forge->addForeignKey('quiz_id', 'quiz', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('materi_id', 'materi', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('murid_id', 'users', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('quiz_results');
+        $this->forge->createTable('materi_siswa');
     }
 
     public function down()
     {
-        // Menghapus tabel quiz_results
-        $this->forge->dropTable('quiz_results');
+        $this->forge->dropTable('materi_siswa');
     }
 }

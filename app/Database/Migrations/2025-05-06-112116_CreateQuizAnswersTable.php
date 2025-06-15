@@ -16,19 +16,20 @@ class CreateQuizAnswersTable extends Migration
             ],
             'quiz_id' => [
                 'type' => 'INT',
-                'constraint' => 11,
+                'unsigned' => true,
             ],
             'murid_id' => [
                 'type' => 'INT',
-                'constraint' => 11,
+                'unsigned' => true,
             ],
             'soal_id' => [
                 'type' => 'INT',
-                'constraint' => 11,
+                'unsigned' => true,
             ],
             'jawaban_pilih' => [
                 'type' => 'VARCHAR',
                 'constraint' => 255,
+                'null' => true,
             ],
             'is_correct' => [
                 'type' => 'BOOLEAN',
@@ -46,6 +47,9 @@ class CreateQuizAnswersTable extends Migration
 
         // Membuat tabel quiz_answers
         $this->forge->addPrimaryKey('id');
+        $this->forge->addForeignKey('murid_id', 'users', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('quiz_id', 'quiz', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('soal_id', 'soal', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('quiz_answers');
     }
 

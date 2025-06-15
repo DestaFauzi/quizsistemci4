@@ -14,14 +14,16 @@
             --dark: #212529;
             --success: #4cc9f0;
             --border-radius: 8px;
+            --gray: #6c757d;
+            --gray-dark: #5a6268;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f5f7fb;
@@ -29,34 +31,34 @@
             line-height: 1.6;
             padding: 20px;
         }
-        
+
         .container {
             max-width: 800px;
-            margin: 30px auto;
+            margin: 0 auto;
             padding: 30px;
             background: white;
             border-radius: var(--border-radius);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
-        
+
         h1 {
             color: var(--primary);
             text-align: center;
             margin-bottom: 30px;
             font-weight: 600;
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
             color: var(--dark);
         }
-        
+
         input[type="text"],
         textarea,
         select {
@@ -68,7 +70,7 @@
             font-size: 16px;
             transition: all 0.3s ease;
         }
-        
+
         input[type="text"]:focus,
         textarea:focus,
         select:focus {
@@ -76,13 +78,37 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
-        
+
         textarea {
             min-height: 120px;
             resize: vertical;
         }
-        
-        button {
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .back-button {
+            background-color: var(--gray);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            text-align: center;
+        }
+
+        .back-button:hover {
+            background-color: var(--gray-dark);
+        }
+
+        button[type="submit"] {
             background-color: var(--primary);
             color: white;
             border: none;
@@ -92,25 +118,29 @@
             cursor: pointer;
             font-family: 'Poppins', sans-serif;
             font-weight: 500;
-            width: 100%;
             transition: all 0.3s ease;
-            margin-top: 10px;
+            flex: 1;
         }
-        
-        button:hover {
+
+        button[type="submit"]:hover {
             background-color: var(--secondary);
             transform: translateY(-2px);
         }
-        
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 
 <body>
+
     <div class="container">
         <h1>Buat Kelas Baru</h1>
 
@@ -137,7 +167,10 @@
                 </select>
             </div>
 
-            <button type="submit">Buat Kelas</button>
+            <div class="button-group">
+                <a href="/guru/dashboard" class="back-button">← Kembali</a>
+                <button type="submit">Buat Kelas</button>
+            </div>
         </form>
     </div>
 </body>
