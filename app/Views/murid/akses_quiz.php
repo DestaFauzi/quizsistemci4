@@ -264,6 +264,7 @@
             const countdownElement = document.getElementById('countdown');
             const timeWarningElement = document.getElementById('time-warning');
             const quizForm = document.getElementById('quizForm');
+            let isSubmitting = false;
 
             // take the remaining time from localStorage (if any), or set the initial time
             let timeLeft = localStorage.getItem('quizTimeLeft');
@@ -271,7 +272,7 @@
 
             // Show confirmation before leaving the page
             window.addEventListener('beforeunload', function(e) {
-                if (timeLeft > 0) {
+                if (!isSubmitting && timeLeft > 0) {
                     e.preventDefault();
                     e.returnValue = 'Anda memiliki quiz yang sedang berjalan. Yakin ingin meninggalkan halaman?';
                 }
@@ -297,6 +298,9 @@
                 if (timeLeft <= 0) {
                     clearInterval(countdownInterval);
                     countdownElement.textContent = "Waktu habis!";
+                    // User confirmed
+                    isSubmitting = true;
+                    // Clear the timer
                     localStorage.removeItem('quizTimeLeft');
                     quizForm.submit();
                 }
@@ -319,9 +323,10 @@
                 }
 
                 // User confirmed
+                isSubmitting = true;
                 // Clear the timer
                 localStorage.removeItem('quizTimeLeft');
-                quizForm.submit(); // Submit manual
+                quizForm.submit();
             });
         });
     </script>
