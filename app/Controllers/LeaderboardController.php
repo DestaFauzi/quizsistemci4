@@ -92,6 +92,7 @@ class LeaderboardController extends Controller
         if (!empty($muridIdList)) {
             $materi = $materiSiswaModel
                 ->select('materi_siswa.murid_id, materi.point')
+                ->where('materi_siswa.status', 'selesai')
                 ->join('materi', 'materi.id = materi_siswa.materi_id')
                 ->whereIn('materi_siswa.murid_id', $muridIdList)
                 ->where('materi.kelas_id', $kelasId)
@@ -172,6 +173,8 @@ class LeaderboardController extends Controller
             'currentUserRank' => $currentUserRank,
             'userRole'        => $userRoleName
         ];
+
+        // dd($data);
 
         if ($userRoleName === 'guru') {
             return view('guru/leaderboard', $data);
