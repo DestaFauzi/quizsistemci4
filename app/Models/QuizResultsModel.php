@@ -8,9 +8,23 @@ class QuizResultsModel extends Model
 {
     protected $table = 'quiz_results'; // Nama tabel di database
     protected $primaryKey = 'id'; // Primary key
-    protected $allowedFields = ['quiz_id', 'murid_id', 'score', 'kelas_id', 'created_at', 'updated_at'];
-
+    protected $allowedFields = ['quiz_id', 'murid_id', 'score', 'max_score', 'kelas_id', 'created_at', 'updated_at'];
     protected $useTimestamps = true; // Menggunakan created_at dan updated_at
+
+    public function whereMurid($murid_id)
+    {
+        return $this->where('murid_id', $murid_id);
+    }
+
+    public function whereQuiz($quizId)
+    {
+        return $this->where('quiz_id', $quizId);
+    }
+
+    public function whereQuizIn(array $quizIds)
+    {
+        return $this->whereIn('quiz_id', $quizIds);
+    }
 
     // Mendapatkan leaderboard berdasarkan quiz_id
     public function getLeaderboard($quizId)

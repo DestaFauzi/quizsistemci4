@@ -119,6 +119,35 @@
             color: var(--primary);
         }
 
+        .flash-alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-top: -20px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            font-weight: 500;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .flash-alert i {
+            margin-right: 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        .flash-success {
+            background-color: rgba(75, 181, 67, 0.1);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .flash-danger {
+            background-color: rgba(217, 83, 79, 0.1);
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+
         .material-list,
         .quiz-list {
             display: flex;
@@ -186,6 +215,29 @@
             margin-right: 0.5rem;
         }
 
+        .done-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: var(--success);
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .done-btn:hover {
+            background-color: #3fa037;
+            box-shadow: 0 3px 10px rgba(75, 181, 67, 0.2);
+        }
+
+        .done-btn i {
+            margin-right: 0.5rem;
+        }
+
         .locked-message {
             color: var(--gray);
             font-size: 0.9rem;
@@ -206,6 +258,7 @@
             font-size: 0.9rem;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 0.5rem;
             background-color: rgba(75, 181, 67, 0.1);
             border-radius: 6px;
@@ -215,10 +268,23 @@
             margin-right: 0.5rem;
         }
 
+        .completed-message .score {
+            font-weight: 600;
+            margin-left: 1rem;
+            white-space: nowrap;
+        }
+
         .action-buttons {
             display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 1rem;
             margin-top: 2rem;
+        }
+
+        .left-buttons {
+            display: flex;
+            gap: 1rem;
         }
 
         .primary-btn {
@@ -235,9 +301,13 @@
             text-decoration: none;
         }
 
-        .primary-btn:hover {
+        .primary-btn:hover:not([disabled]) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .primary-btn[disabled] {
+            cursor: not-allowed;
         }
 
         .primary-btn i {
@@ -266,6 +336,25 @@
         .secondary-btn i {
             margin-right: 0.5rem;
         }
+
+        .review-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .review-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 238, 84, 0.3);
+        }
     </style>
 </head>
 
@@ -275,13 +364,17 @@
             <h1 class="class-title"><?= esc($kelas['nama_kelas']) ?></h1>
             <p class="class-description"><?= esc($kelas['deskripsi']) ?></p>
 
-            <?php if ($status['status'] == 'belum_dimulai'): ?>
+            <?php if ($canEnroll == false): ?>
+                <span class="status-badge status-not-started">
+                    <i class="fas fa-lock"></i> Belum Bisa Mengikuti Kelas Ini
+                </span>
+            <?php elseif ($status['status'] == 'belum_dimulai'): ?>
                 <span class="status-badge status-not-started">
                     <i class="fas fa-hourglass-start"></i> Belum Dimulai
                 </span>
             <?php elseif ($status['status'] == 'proses'): ?>
                 <span class="status-badge status-in-progress">
-                    <i class="fas fa-spinner"></i> Dalam Proses (Level <?= $status['level'] ?>)
+                    <i class="fas fa-spinner"></i> Dalam Proses (Level <?= $status['level_materi'] ?>)
                 </span>
             <?php else: ?>
                 <span class="status-badge status-completed">
@@ -289,6 +382,20 @@
                 </span>
             <?php endif; ?>
         </div>
+
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="flash-alert flash-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <?= session()->getFlashdata('error') ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (session()->getFlashdata('success')): ?>
+            <div class="flash-alert flash-success">
+                <i class="fas fa-check-circle"></i>
+                <?= session()->getFlashdata('success') ?>
+            </div>
+        <?php endif; ?>
 
         <div class="content-section">
             <div class="section-card">
@@ -308,18 +415,30 @@
                                 </div>
 
                                 <div class="item-action">
-                                    <?php if ($status['status'] == 'belum_dimulai'): ?>
+                                    <?php if (!$item['can_access']): ?>
                                         <p class="locked-message">
-                                            <i class="fas fa-lock"></i> Mulai kelas untuk mengakses materi
+                                            <i class="fas fa-lock"></i>
+                                            <?= ($status['status'] == 'belum_dimulai')
+                                                ? 'Mulai kelas untuk mengakses materi'
+                                                : 'Selesaikan level ' . ($item['level'] - 1) . ' terlebih dahulu' ?>
                                         </p>
-                                    <?php elseif ($item['level'] == 1 || ($item['level'] > 1 && $status['level'] >= $item['level'])): ?>
-                                        <a href="<?= base_url($item['file_path']) ?>" target="_blank" class="view-btn">
+                                    <?php else: ?>
+                                        <a href="<?= site_url("murid/aksesMateri/{$kelas['id']}/{$item['id']}") ?>" target="_blank" class="view-btn">
                                             <i class="fas fa-eye"></i> Lihat Materi Ini
                                         </a>
-                                    <?php else: ?>
-                                        <p class="locked-message">
-                                            <i class="fas fa-lock"></i> Selesaikan level <?= $item['level'] - 1 ?> terlebih dahulu
-                                        </p>
+
+                                        <?php if (!$item['is_completed'] && $status['status_materi'] == 'sedang_dibaca'): ?>
+                                            <form action="<?= site_url("murid/selesaikanMateri/{$kelas['id']}/{$item['id']}") ?>" method="post" style="display: inline;">
+                                                <button type="submit" class="done-btn">
+                                                    <i class="fas fa-check-circle"></i> Selesaikan Bacaan
+                                                </button>
+                                            </form>
+                                        <?php elseif ($item['is_completed'] || $status['status_materi'] == 'selesai'): ?>
+                                            <span class="done-btn">
+                                                <i class="fas fa-check"></i> Sudah Dibaca
+                                            </span>
+                                        <?php endif; ?>
+
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -349,19 +468,25 @@
                                         <p class="locked-message">
                                             <i class="fas fa-lock"></i> Mulai kelas untuk mengakses quiz
                                         </p>
-                                    <?php elseif ($item['level'] == 1 || ($item['level'] > 1 && $status['level'] >= $item['level'])): ?>
-                                        <?php if ($status['status'] == 'selesai' && $status['level'] >= $item['level']): ?>
+                                    <?php elseif ($item['can_access']): ?>
+                                        <?php if ($item['is_completed']): ?>
                                             <p class="completed-message">
-                                                <i class="fas fa-check-circle"></i> Quiz ini sudah selesai
+                                                <span>
+                                                    <i class="fas fa-check-circle"></i> Quiz ini sudah selesai
+                                                </span>
+                                                <span class="score">
+                                                    <?= $item['score']; ?>/<?= $item['max_score']; ?>
+                                                </span>
                                             </p>
+
                                         <?php else: ?>
-                                            <a href="<?= base_url('murid/viewQuiz/' . esc($item['id'])) ?>" class="view-btn">
+                                            <a href="<?= site_url("/murid/aksesQuiz/{$kelas['id']}/{$item['id']}") ?>" class="view-btn">
                                                 <i class="fas fa-play"></i> Kerjakan Quiz
                                             </a>
                                         <?php endif; ?>
                                     <?php else: ?>
                                         <p class="locked-message">
-                                            <i class="fas fa-lock"></i> Selesaikan level <?= $item['level'] - 1 ?> terlebih dahulu
+                                            <i class="fas fa-lock"></i> Selesaikan semua materi hingga level <?= $item['level'] ?> terlebih dahulu
                                         </p>
                                     <?php endif; ?>
                                 </div>
@@ -373,23 +498,40 @@
         </div>
 
         <div class="action-buttons">
-            <?php if ($status['status'] == 'belum_dimulai'): ?>
-                <a href="<?= site_url('murid/masukKelas/' . $kelas['id']) ?>" class="primary-btn">
-                    Mulai Belajar <i class="fas fa-arrow-right"></i>
+            <div class="left-buttons">
+                <?php if ($status['status'] == 'belum_dimulai'): ?>
+                    <?php if ($canEnroll): ?>
+                        <a href="#" class="primary-btn" onclick="event.preventDefault(); document.getElementById('start-class-form').submit();">
+                            Mulai Belajar <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <form id="start-class-form" action="<?= site_url('murid/masukKelas/' . $kelas['id']) ?>" method="post" hidden>
+                        </form>
+                    <?php else: ?>
+                        <a href="#" class="primary-btn" disabled>
+                            Mulai Belajar <i class="fas fa-arrow-right"></i>
+                        </a>
+                    <?php endif; ?>
+                <?php elseif ($status['status'] == 'proses'): ?>
+                    <a href="<?= $lanjutkanBelajarUrl ?>" class="primary-btn">
+                        Lanjutkan Belajar <i class="fas fa-arrow-right"></i>
+                    </a>
+                <?php elseif ($status['status'] == 'selesai'): ?>
+                    <a href="<?= site_url('murid/reviewKelas/' . $kelas['id']) ?>" class="primary-btn">
+                        <i class="fas fa-redo" style="margin-right: 5px;"></i> Review Kelas
+                    </a>
+                <?php endif; ?>
+                <a href="/murid/semuaKelas" class="secondary-btn">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Semua Kelas
                 </a>
-            <?php elseif ($status['status'] == 'proses'): ?>
-                <a href="<?= site_url('murid/lanjutkanKelas/' . $kelas['id']) ?>" class="primary-btn">
-                    Lanjutkan Belajar <i class="fas fa-arrow-right"></i>
-                </a>
-            <?php elseif ($status['status'] == 'selesai'):?>
-                <a href="<?= site_url('murid/reviewKelas/' . $kelas['id']) ?>" class="primary-btn">
-                    <i class="fas fa-redo"></i> Review Kelas
-                </a>
-            <?php endif; ?>
+            </div>
 
-            <a href="/murid/semuaKelas" class="secondary-btn">
-                <i class="fas fa-arrow-left"></i> Kembali ke Semua Kelas
-            </a>
+            <?php if ($status['status'] != 'belum_dimulai'): ?>
+                <div>
+                    <a href="<?= site_url('murid/leaderboard/' . $kelas['id']) ?>" class="review-btn">
+                        <i class="fas fa-chart-line" style="margin-right: 5px;"></i> Show Leaderboard
+                    </a>
+                </div>
+            <?php endif;  ?>
         </div>
     </div>
 </body>

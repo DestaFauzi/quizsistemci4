@@ -23,9 +23,6 @@
             --danger-border: #f5c6cb;
             --box-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.06);
             --box-shadow-medium: 0 8px 25px rgba(0, 0, 0, 0.1);
-            --highlight-bg: #e0f7fa;
-            /* New: Light blue for highlight */
-            --highlight-border: #80deea;
         }
 
         body {
@@ -102,6 +99,7 @@
             border-bottom-right-radius: 8px;
         }
 
+
         .leaderboard-table tbody tr {
             background-color: var(--white);
             border-radius: 8px;
@@ -109,22 +107,7 @@
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
 
-        /* Highlighted row for the current student */
-        .leaderboard-table tbody tr.highlight-row {
-            background-color: var(--highlight-bg);
-            border: 2px solid var(--highlight-border);
-            box-shadow: 0 4px 15px rgba(0, 192, 239, 0.2);
-            /* A bit more prominent shadow */
-        }
-
-        .leaderboard-table tbody tr.highlight-row td {
-            font-weight: 600;
-            /* Make text bolder for highlighted row */
-            color: var(--text-dark);
-        }
-
-
-        .leaderboard-table tbody tr:hover:not(.highlight-row) {
+        .leaderboard-table tbody tr:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         }
@@ -138,6 +121,7 @@
             border-bottom-right-radius: 8px;
             border-top-right-radius: 8px;
         }
+
 
         .leaderboard-table td.rank {
             text-align: center;
@@ -162,13 +146,6 @@
             border-radius: 8px;
             margin-top: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .info-text {
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 1.1em;
-            color: var(--text-medium);
         }
 
         .back-button {
@@ -331,16 +308,12 @@
         <?php endif; ?>
 
         <?php if ($hasStudents) : ?>
-            <?php if ($currentUserRank !== null) : ?>
-                <p class="info-text">Posisi Anda di leaderboard: Peringkat #<strong><?= esc($currentUserRank) ?></strong> dari <?= esc($totalItems) ?> murid.</p>
-            <?php endif; ?>
-
             <?php if (!empty($leaderboard['data_murid'])) : ?>
                 <div class="leaderboard-table-container">
                     <table class="leaderboard-table">
                         <thead>
                             <tr>
-                                <th>Peringkat</th>
+                                <th>Rank</th>
                                 <th>Username</th>
                                 <th>Total Poin Materi</th>
                                 <th>Total Poin Quiz</th>
@@ -349,13 +322,13 @@
                         </thead>
                         <tbody>
                             <?php
-                            $loggedInUserId = session()->get('user_id');
-                            foreach ($leaderboard['data_murid'] as $murid) :
-                                $isCurrentUser = ($murid['murid_id'] == $loggedInUserId);
-                                $rowClass = $isCurrentUser ? 'highlight-row' : '';
+                            $itemsPerPage = $pager->getPerPage() > 0 ? $pager->getPerPage() : 10;
+                            $startRank = (($currentPage - 1) * $itemsPerPage) + 1;
+
+                            foreach ($leaderboard['data_murid'] as $index => $murid) :
                             ?>
-                                <tr class="<?= $rowClass ?>">
-                                    <td class="rank"><?= esc($murid['rank']) ?></td>
+                                <tr>
+                                    <td class="rank"><?= $startRank + $index ?></td>
                                     <td><?= esc($murid['username']) ?></td>
                                     <td><?= esc($murid['total_score_materi']) ?></td>
                                     <td><?= esc($murid['total_score_quiz']) ?></td>
@@ -371,14 +344,14 @@
                 </div>
 
             <?php else : ?>
-                <p class="no-data">Belum ada aktivitas materi atau kuis di kelas ini. Mari mulai belajar dan raih poin!</p>
+                <p class="no-data">Belum ada aktivitas materi atau kuis untuk kelas ini. Ajak murid Anda untuk mulai belajar!</p>
             <?php endif; ?>
         <?php else : ?>
-            <p class="no-data">Belum ada murid yang terdaftar di kelas ini. Anda bisa menjadi yang pertama!</p>
+            <p class="no-data">Belum ada murid yang terdaftar di kelas ini. Daftarkan murid untuk melihat leaderboard!</p>
         <?php endif; ?>
 
-        <a href="<?= site_url('murid/detailKelas/' . esc($kelasId)) ?>" class="back-button">
-            Kembali ke Detail Kelas
+        <a href="<?= site_url('guru/viewClasses') ?>" class="back-button">
+            Kembali ke Daftar Kelas
         </a>
     </div>
 </body>

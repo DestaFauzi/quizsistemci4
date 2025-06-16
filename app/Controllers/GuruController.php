@@ -2,347 +2,956 @@
 
 namespace App\Controllers;
 
+use App\Models\MateriSiswaModel;
 use CodeIgniter\Controller;
 use App\Models\KelasModel;
 use App\Models\MateriModel;
 use App\Models\QuizModel;
+use App\Models\QuizResultsModel;
 use App\Models\SoalModel;
 use App\Models\KelasSiswaModel;
+use App\Models\QuizAnswersModel;
 
 class GuruController extends Controller
 {
-    // Fungsi untuk dashboard guru
-    public function dashboard()
-    {
-        // Memeriksa apakah user memiliki role guru (role_id == 2)
-        if (session()->get('role_id') != 2) {
-            return redirect()->to('/');
-        }
+    protected $kelasModel;
+    protected $materiModel;
+    protected $quizModel;
+    protected $soalModel;
+    protected $kelasSiswaModel;
+    protected $materiSiswaModel;
+    protected $quizResultsModel;
+    protected $pager;
 
-        return view('guru/dashboard');
+    public function __construct()
+    {
+        $this->kelasModel = new KelasModel();
+        $this->materiModel = new MateriModel();
+        $this->quizModel = new QuizModel();
+        $this->soalModel = new SoalModel();
+        $this->kelasSiswaModel = new KelasSiswaModel();
+        $this->materiSiswaModel = new MateriSiswaModel();
+        $this->quizResultsModel = new QuizResultsModel();
+        $this->pager = \Config\Services::pager();
     }
 
-    // Fungsi untuk membuat kelas, materi, dan quiz
-    // Menampilkan form untuk membuat kelas
+    public function dashboard()
+    {
+        // Memastikan hanya guru yang dapat mengakses dashboard
+        if (session()->get('role_id') != 2) {
+            return redirect()->to('/')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
+        $totalKelas = $this->kelasModel->where('guru_id', session()->get('user_id'))->countAllResults();
+        $totalMateri = $this->materiModel
+            ->join('kelas', 'materi.kelas_id = kelas.id')
+            ->where('kelas.guru_id', session()->get('user_id'))
+            ->countAllResults();
+        $totalQuiz = $this->quizModel
+            ->join('kelas', 'quiz.kelas_id = kelas.id')
+            ->where('kelas.guru_id', session()->get('user_id'))
+            ->countAllResults();
+
+
+        $data = [
+            'totalKelas' => $totalKelas,
+            'totalMateri' => $totalMateri,
+            'totalQuiz' => $totalQuiz
+        ];
+
+        return view('guru/dashboard', $data);
+    }
+
+    /* Kelas Management */
+
     public function createClass()
     {
         return view('guru/create_class');
     }
 
-    // Menyimpan data kelas ke dalam database
     public function saveClass()
     {
-        $kelasModel = new KelasModel();
-
-        $data = [
-            'nama_kelas' => $this->request->getPost('nama_kelas'),
-            'deskripsi' => $this->request->getPost('deskripsi'),
-            'status' => $this->request->getPost('status'),
-            'jumlah_level' => $this->request->getPost('jumlah_level'),
-            'guru_id' => session()->get('user_id'),
+        // Validasi input
+        $rules = [
+            'nama_kelas'   => 'required|min_length[3]|max_length[100]',
+            'deskripsi'    => 'permit_empty|max_length[500]',
+            'status'       => 'required|in_list[aktif,non_aktif]',
+            'jumlah_level' => 'required|integer|greater_than[0]',
         ];
 
-        // Simpan data kelas
-        $kelasModel->save($data);
-
-        return redirect()->to('/guru/dashboard')->with('success', 'Kelas berhasil dibuat!');
-    }
-    // Menampilkan semua kelas yang dibuat oleh guru
-    public function viewClasses()
-    {
-        $kelasModel = new KelasModel();
-
-        // Mengambil semua kelas yang dibuat oleh guru yang sedang login
-        $kelas = $kelasModel->where('guru_id', session()->get('user_id'))->findAll();
-
-        return view('guru/view_classes', ['kelas' => $kelas]);
-    }
-
-    public function editStatus($id)
-    {
-        $kelasModel = new KelasModel();
-        $kelas = $kelasModel->find($id);
-
-        // Mengambil status yang ada
-        $statusOptions = ['aktif', 'non_aktif'];
-
-        return view('guru/edit_status', ['kelas' => $kelas, 'statusOptions' => $statusOptions]);
-    }
-
-    // Fungsi untuk menyimpan perubahan status kelas
-    public function updateStatus($id)
-    {
-        $kelasModel = new KelasModel();
-
-        $data = [
-            'status' => $this->request->getPost('status')
-        ];
-
-        $kelasModel->update($id, $data);
-
-        return redirect()->to('/guru/viewClasses')->with('success', 'Status kelas berhasil diperbarui!');
-    }
-
-    // Fungsi untuk menambah materi ke kelas
-    public function addMateri($kelas_id)
-    {
-        $kelasModel = new KelasModel();
-
-        // Ambil data kelas berdasarkan ID
-        $kelas = $kelasModel->find($kelas_id);
-
-        // Pastikan data kelas ditemukan
-        if (!$kelas) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException('Kelas tidak ditemukan.');
+        // Memvalidasi input data
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // Kirim data kelas ke view
-        return view('guru/add_materi', [
-            'kelas' => $kelas  // Mengirimkan data kelas ke view
-        ]);
-    }
-
-    // Fungsi untuk menyimpan materi
-    public function saveMateri()
-    {
-        // Logika untuk menyimpan materi
-        // ...
-        return redirect()->to('/guru/viewClasses')->with('success', 'Materi berhasil ditambahkan!');
-    }
-
-    // Fungsi untuk menambah quiz ke kelas
-    public function addQuiz($kelas_id)
-    {
-        return view('guru/add_quiz', [
-            'kelas_id' => $kelas_id,
-        ]);
-    }
-
-    // Fungsi untuk menyimpan quiz
-    public function saveQuiz()
-    {
-        $quizModel = new QuizModel();
-
-        // Menyimpan data quiz
-        $quizData = [
-            'kelas_id' => $this->request->getPost('kelas_id'),
-            'judul_quiz' => $this->request->getPost('judul_quiz'),
-            'jumlah_soal' => $this->request->getPost('jumlah_soal'),
-            'level' => $this->request->getPost('level'),
-            'waktu' => $this->request->getPost('waktu')
+        // Menyiapkan data untuk disimpan ke database
+        $data = [
+            'nama_kelas'   => $this->request->getPost('nama_kelas'),
+            'deskripsi'    => $this->request->getPost('deskripsi'),
+            'status'       => $this->request->getPost('status'),
+            'jumlah_level' => $this->request->getPost('jumlah_level'),
+            'guru_id'      => session()->get('user_id'),
         ];
 
-        // Menyimpan data quiz ke database
-        $quizModel->save($quizData);
+        // Menyimpan data kelas dan memberikan feedback
+        if ($this->kelasModel->save($data)) {
+            return redirect()->to('/guru/dashboard')->with('success', 'Kelas berhasil dibuat!');
+        } else {
+            return redirect()->back()->withInput()->with('error', 'Gagal membuat kelas. Silakan coba lagi.');
+        }
+    }
 
-        // Ambil ID quiz yang baru saja disimpan
-        $quiz_id = $quizModel->getInsertID();
-
-        // Mengarahkan ke halaman untuk menambahkan soal
-        return redirect()->to('/guru/addSoal/' . $quiz_id)->with('success', 'Quiz berhasil ditambahkan! Sekarang tambahkan soal untuk quiz ini.');
+    public function viewClasses()
+    {
+        // Mengambil semua kelas yang dibuat oleh guru yang sedang login
+        $kelas = $this->kelasModel->where('guru_id', session()->get('user_id'))->findAll();
+        return view('guru/view_classes', ['kelas' => $kelas]);
     }
 
     public function detailKelas($id)
     {
-        $kelasModel = new KelasModel();
-        $materiModel = new MateriModel();
-        $quizModel = new QuizModel();
-        $kelasSiswaModel = new KelasSiswaModel();
+        // Mengambil detail kelas, materi, quiz, dan status murid terkait
+        $kelas = $this->kelasModel->find($id);
 
-        // Ambil data kelas berdasarkan id
-        $kelas = $kelasModel->find($id);
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+        }
 
-        // Ambil materi dan quiz untuk kelas tersebut
-        $materi = $materiModel->where('kelas_id', $id)->findAll();
-        $quiz = $quizModel->where('kelas_id', $id)->findAll();
-
-        // Ambil status kelas murid jika ada
+        $materi  = $this->materiModel->where('kelas_id', $id)->findAll();
+        $quiz    = $this->quizModel->where('kelas_id', $id)->findAll();
         $muridId = session()->get('user_id');
-        $status = $kelasSiswaModel->where('kelas_id', $id)->where('murid_id', $muridId)->first();
+        $status  = $this->kelasSiswaModel->where('kelas_id', $id)->where('murid_id', $muridId)->first();
 
-        // Kirim data kelas dan status ke view
         return view('guru/detail_kelas', [
-            'kelas' => $kelas,
+            'kelas'  => $kelas,
             'materi' => $materi,
-            'quiz' => $quiz,
+            'quiz'   => $quiz,
             'status' => $status
         ]);
     }
 
+    public function editClass($kelasId)
+    {
+        $kelas = $this->kelasModel->find($kelasId);
+
+        // Jika kelas tidak ditemukan, redirect dengan pesan error
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+        }
+
+        // Tampilkan view edit_class dan kirim data kelas
+        return view('guru/edit_kelas', ['kelas' => $kelas]);
+    }
+
+    public function updateClass($kelasId)
+    {
+        // Temukan kelas yang akan diperbarui untuk memastikan ada
+        $kelas = $this->kelasModel->find($kelasId);
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+        }
+
+        // Definisikan aturan validasi
+        $rules = [
+            'nama_kelas'   => 'required|min_length[3]|max_length[255]',
+            'deskripsi'    => 'required|min_length[10]|max_length[500]',
+            'jumlah_level' => 'required|integer|greater_than[0]',
+            'status'       => 'required|in_list[aktif,non_aktif]',
+        ];
+
+        // Jalankan validasi
+        if (!$this->validate($rules)) {
+            // Jika validasi gagal, kembalikan ke halaman edit dengan input lama dan error
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        // Ambil data dari formulir
+        $data = [
+            'id'           => $kelasId,
+            'nama_kelas'   => $this->request->getPost('nama_kelas'),
+            'deskripsi'    => $this->request->getPost('deskripsi'),
+            'jumlah_level' => (int) $this->request->getPost('jumlah_level'),
+            'status'       => $this->request->getPost('status'),
+        ];
+
+        // Simpan data ke database
+        if ($this->kelasModel->save($data)) {
+            return redirect()->to('/guru/detailKelas/' . $kelasId)->with('success', 'Kelas berhasil diperbarui!');
+        } else {
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui kelas. Silakan coba lagi.');
+        }
+    }
+
+    /* Materi Management */
+    public function addMateri($kelas_id)
+    {
+        // Menampilkan form tambah materi untuk kelas tertentu
+        $kelas = $this->kelasModel->find($kelas_id);
+
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+        }
+
+        return view('guru/add_materi', ['kelas' => $kelas]);
+    }
+    public function uploadMateri()
+    {
+        $kelasId = $this->request->getPost('kelas_id');
+
+        // Memverifikasi kelas dan menentukan level maksimal
+        $kelas = $this->kelasModel->find($kelasId);
+
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+        }
+
+        $maxLevel = $kelas['jumlah_level'];
+
+        // Aturan validasi untuk upload materi
+        $rules = [
+            'judul'       => 'required|min_length[3]|max_length[255]',
+            'level'       => "required|integer|greater_than[0]|less_than_equal_to[{$maxLevel}]",
+            'file_materi' => [
+                'uploaded[file_materi]',
+                'mime_in[file_materi,application/pdf]',
+                'max_size[file_materi,5000]',
+            ],
+        ];
+
+        // Pesan kustom untuk validasi level materi
+        $messages = [
+            'level' => [
+                'less_than_equal_to' => 'Level materi tidak boleh melebihi jumlah level kelas ({param}).',
+            ],
+        ];
+
+        // Memvalidasi input dan file
+        if (!$this->validate($rules, $messages)) {
+            return redirect()->to('/guru/addMateri/' . $kelasId)->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $file = $this->request->getFile('file_materi');
+
+        // Memproses upload file dan menyimpan data materi
+        if ($file->isValid() && !$file->hasMoved()) {
+            $fileName    = $file->getName();
+            $directory = ROOTPATH . 'public/uploads/materi/kelas_' . $kelasId . '/';
+
+            // Membuat direktori jika belum ada
+            if (!is_dir($directory)) {
+                mkdir($directory, 0777, true);
+            }
+
+            $file->move($directory, $fileName);
+
+            $materiData = [
+                'kelas_id'  => $kelasId,
+                'judul'     => $this->request->getPost('judul'),
+                'file_name' => $fileName,
+                'file_path' => 'uploads/materi/kelas_' . $kelasId . '/' . $fileName,
+                'level'     => (int) $this->request->getPost('level'),
+                'point'     => (int) $this->request->getPost('point'),
+            ];
+
+            // Menyimpan data materi ke database
+            if ($this->materiModel->save($materiData)) {
+                $kelasSiswa = $this->kelasSiswaModel;
+
+                $existing = $kelasSiswa
+                    ->whereKelas($kelasId)
+                    ->whereStatus('selesai')
+                    ->whereStatusMateri('selesai')
+                    ->findAll();
+
+                if (!empty($existing)) {
+                    $kelasSiswa
+                        ->whereKelas($kelasId)
+                        ->whereStatus('selesai')
+                        ->whereStatusMateri('selesai')
+                        ->set([
+                            'status' => 'proses',
+                            'status_materi' => 'belum_diakses'
+                        ])
+                        ->update();
+                }
+
+                return redirect()->to('/guru/detailKelas/' . $kelasId)->with('success', 'Materi berhasil diunggah!');
+            } else {
+                // Menghapus file jika gagal menyimpan ke database
+                unlink($directory . $fileName);
+                return redirect()->to('/guru/addMateri/' . $kelasId)->withInput()->with('error', 'Gagal menyimpan data materi ke database. Silakan coba lagi.');
+            }
+        }
+
+        return redirect()->to('/guru/addMateri/' . $kelasId)->with('error', 'Gagal mengunggah file. Pastikan file valid dan ukurannya tidak melebihi batas.');
+    }
+
+    public function editMateri($materi_id)
+    {
+        // Menampilkan form edit materi
+        $materi = $this->materiModel->find($materi_id);
+
+        if (!$materi) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Materi tidak ditemukan.');
+        }
+
+        $kelas = $this->kelasModel->find($materi['kelas_id']);
+
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas terkait materi tidak ditemukan.');
+        }
+
+        return view('guru/edit_materi', [
+            'materi' => $materi,
+            'kelas'  => $kelas
+        ]);
+    }
+
+    public function updateMateri($materi_id)
+    {
+        // Memperbarui data materi dan mengelola file yang diunggah
+        $materi = $this->materiModel->find($materi_id);
+
+        if (!$materi) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Materi tidak ditemukan.');
+        }
+
+        $kelasId     = $this->request->getPost('kelas_id');
+        $oldFilePath = $this->request->getPost('old_file_path');
+
+        // Ambil data kelas untuk validasi jumlah_level
+        $kelas = $this->kelasModel->find($kelasId);
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas terkait materi tidak ditemukan.');
+        }
+        $maxLevel = $kelas['jumlah_level'];
+
+        // Aturan validasi untuk update materi
+        $rules = [
+            'judul'       => 'required|min_length[3]|max_length[255]',
+            'level'       => "required|integer|greater_than[0]|less_than_equal_to[{$maxLevel}]",
+            'point'        => 'required|integer|greater_than_equal_to[0]',
+            'file_materi' => [
+                'mime_in[file_materi,application/pdf]',
+                'max_size[file_materi,5000]',
+            ],
+        ];
+
+        // Pesan kesalahan kustom untuk validasi
+        $messages = [
+            'level' => [
+                'less_than_equal_to' => 'Level materi tidak boleh melebihi jumlah level kelas ({param}).',
+            ],
+            'file_materi' => [
+                'uploaded' => 'Anda harus mengunggah file materi.',
+                'mime_in'  => 'Format file tidak didukung. Harap unggah PDF, Word, atau gambar.',
+                'max_size' => 'Ukuran file melebihi batas (5MB).',
+            ],
+        ];
+
+        // Memvalidasi input
+        if (!$this->validate($rules, $messages)) {
+            // Jika validasi gagal, kembalikan ke halaman edit materi dengan input dan error
+            return redirect()->to('/guru/editMateri/' . $materi_id)->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $file     = $this->request->getFile('file_materi');
+        $fileName = $materi['file_name'];
+        $filePath = $materi['file_path'];
+
+        // Cek apakah ada file baru diunggah dan proses penggantian file
+        $isFileNew = false;
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            $directory = ROOTPATH . 'public/uploads/materi/kelas_' . $kelasId . '/';
+
+            // Hapus file lama jika ada
+            if ($oldFilePath && file_exists(ROOTPATH . 'public/' . $oldFilePath)) {
+                unlink(ROOTPATH . 'public/' . $oldFilePath);
+            }
+
+            // Pindahkan file baru
+            if (!is_dir($directory)) {
+                mkdir($directory, 0777, true);
+            }
+            $fileName = $file->getName(); // Dapatkan nama file baru
+            $file->move($directory, $fileName);
+            $filePath = 'uploads/materi/kelas_' . $kelasId . '/' . $fileName; // Path file baru
+
+            $isFileNew = true;
+        }
+
+
+        $materiData = [
+            'id'            => $materi_id,
+            'kelas_id'      => $kelasId,
+            'judul'         => $this->request->getPost('judul'),
+            'file_name'     => $fileName,
+            'file_path'     => $filePath,
+            'level'         => (int) $this->request->getPost('level'),
+            'point'         => (int) $this->request->getPost('point')
+        ];
+
+        // Memperbarui data materi di database
+        if ($this->materiModel->save($materiData)) {
+            if ($isFileNew) {
+                $kelasSiswa = $this->kelasSiswaModel;
+
+                $existing = $kelasSiswa
+                    ->whereKelas($kelasId)
+                    ->whereStatus('selesai')
+                    ->whereStatusMateri('selesai')
+                    ->findAll();
+
+                if (!empty($existing)) {
+                    $kelasSiswa
+                        ->whereKelas($kelasId)
+                        ->whereStatus('selesai')
+                        ->whereStatusMateri('selesai')
+                        ->set([
+                            'status' => 'proses',
+                            'status_materi' => 'belum_diakses'
+                        ])
+                        ->update();
+                }
+
+                $materiSiswa = new MateriSiswaModel();
+                $existing = $materiSiswa
+                    ->whereMateri($materi_id)
+                    ->whereStatus('selesai')
+                    ->findAll();
+
+                if (!empty($existing)) {
+                    $materiSiswa
+                        ->whereMateri($materi_id)
+                        ->whereStatus('selesai')
+                        ->set([
+                            'status' => 'belum_diakses'
+                        ])
+                        ->update();
+                }
+            }
+
+            return redirect()->to('/guru/detailKelas/' . $kelasId)->with('success', 'Materi berhasil diperbarui!');
+        } else {
+            // Jika gagal menyimpan ke DB, dan ada file baru diunggah, hapus file baru tersebut
+            if (isset($directory) && isset($fileName) && file_exists($directory . $fileName)) {
+                unlink($directory . $fileName);
+            }
+            return redirect()->to('/guru/editMateri/' . $materi_id)->withInput()->with('error', 'Gagal memperbarui materi. Silakan coba lagi.');
+        }
+    }
+
+    public function hapusMateri($id)
+    {
+        // Menghapus materi dan file terkait
+        $materi = $this->materiModel->find($id);
+
+        if (!$materi) {
+            return redirect()->back()->with('error', 'Materi tidak ditemukan!');
+        }
+
+        // Hapus file fisik jika ada
+        if (file_exists(ROOTPATH . 'public/' . $materi['file_path'])) {
+            unlink(ROOTPATH . 'public/' . $materi['file_path']);
+        }
+
+        // Menghapus data materi dari database
+        if ($this->materiModel->delete($id)) {
+            return redirect()->to('/guru/detailKelas/' . $materi['kelas_id'])->with('success', 'Materi berhasil dihapus!');
+        } else {
+            return redirect()->back()->with('error', 'Gagal menghapus materi. Silakan coba lagi.');
+        }
+    }
+
+    /* Quiz Management */
+    public function addQuiz($kelas_id)
+    {
+        // Menampilkan form tambah quiz untuk kelas tertentu
+        $kelas = $this->kelasModel->find($kelas_id);
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+        }
+        return view('guru/add_quiz', ['kelas' => $kelas]);
+    }
+
+    public function saveQuiz()
+    {
+        // Aturan validasi untuk data quiz
+        $rules = [
+            'kelas_id'    => 'required|integer',
+            'judul_quiz'  => 'required|min_length[3]|max_length[255]',
+            'jumlah_soal' => 'required|integer|greater_than[0]',
+            'level'       => 'required|integer|greater_than[0]',
+            'waktu'       => 'required|integer|greater_than[0]',
+        ];
+
+        // Memvalidasi input data
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $quizData = [
+            'kelas_id'    => $this->request->getPost('kelas_id'),
+            'judul_quiz'  => $this->request->getPost('judul_quiz'),
+            'jumlah_soal' => $this->request->getPost('jumlah_soal'),
+            'level'       => $this->request->getPost('level'),
+            'waktu'       => $this->request->getPost('waktu')
+        ];
+
+        // Memeriksa apakah quiz dengan level yang sama sudah ada di kelas ini
+        $existingQuiz = $this->quizModel->where('kelas_id', $quizData['kelas_id'])
+            ->where('level', $quizData['level'])
+            ->first();
+
+        if ($existingQuiz) {
+            return redirect()->to('/guru/addQuiz/' . $quizData['kelas_id'])
+                ->withInput()
+                ->with('error', 'Quiz dengan level ' . $quizData['level'] . ' sudah ada di kelas ini!');
+        }
+
+        // Menyimpan data quiz dan memberikan feedback
+        if ($this->quizModel->save($quizData)) {
+            $kelasSiswa = $this->kelasSiswaModel;
+            $existing = $kelasSiswa
+                ->whereKelas($quizData['kelas_id'])
+                ->whereStatus('selesai')
+                ->whereStatusQuiz('selesai')
+                ->findAll();
+
+            if ($existing) {
+                $kelasSiswa
+                    ->whereKelas($quizData['kelas_id'])
+                    ->whereStatus('selesai')
+                    ->whereStatusQuiz('selesai')
+                    ->set([
+                        'status' => 'proses',
+                        'status_quiz' => 'belum_dikerjakan'
+                    ])
+                    ->update();
+            }
+
+            $quiz_id = $this->quizModel->getInsertID();
+            return redirect()->to('/guru/addSoal/' . $quiz_id)->with('success', 'Quiz berhasil ditambahkan! Sekarang tambahkan soal untuk quiz ini.');
+        } else {
+            return redirect()->back()->withInput()->with('error', 'Gagal membuat quiz. Silakan coba lagi.');
+        }
+    }
 
     public function viewQuiz($quiz_id)
     {
-        $quizModel = new QuizModel();
-        $soalModel = new SoalModel();
+        // Menampilkan detail quiz dan soal-soalnya
+        $quiz = $this->quizModel->find($quiz_id);
 
-        // Ambil data quiz berdasarkan quiz_id
-        $quiz = $quizModel->find($quiz_id);
+        if (!$quiz) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Quiz tidak ditemukan.');
+        }
 
-        // Ambil soal yang terkait dengan quiz ini
-        $soal = $soalModel->where('quiz_id', $quiz_id)->findAll();
+        $soal = $this->soalModel->where('quiz_id', $quiz_id)->findAll();
 
-        // Kirim data quiz dan soal ke view
         return view('guru/view_quiz', [
             'quiz' => $quiz,
             'soal' => $soal
         ]);
     }
 
-    // Fungsi untuk menampilkan form tambah soal
-    public function addSoal($quiz_id)
-    {
-        // Ambil data quiz berdasarkan quiz_id
-        $quizModel = new \App\Models\QuizModel();
-        $quiz = $quizModel->find($quiz_id);
-
-        // Ambil jumlah soal yang sudah diatur saat membuat quiz
-        $jumlah_soal = $quiz['jumlah_soal'];  // Ambil jumlah soal dari quiz yang dipilih
-
-        return view('guru/add_soal', [
-            'quiz_id' => $quiz_id,
-            'jumlah_soal' => $jumlah_soal
-        ]);
-    }
-    // Fungsi untuk menyimpan soal
-    // Fungsi untuk menyimpan soal
-    public function saveSoal()
-    {
-        $soalModel = new SoalModel();
-
-        // Dapatkan jumlah soal dari form
-        $jumlah_soal = $this->request->getPost('jumlah_soal');  // Jumlah soal yang diinput
-
-        // Validasi jika jumlah soal ada
-        if (!$jumlah_soal) {
-            return redirect()->back()->with('error', 'Jumlah soal tidak ditentukan!');
-        }
-
-        // Menyimpan soal untuk setiap soal yang diinput
-        for ($i = 1; $i <= $jumlah_soal; $i++) {
-            $soalData = [
-                'quiz_id' => $this->request->getPost('quiz_id'),
-                'soal' => $this->request->getPost('soal_' . $i),
-                'jawaban_a' => $this->request->getPost('jawaban_a_' . $i),
-                'jawaban_b' => $this->request->getPost('jawaban_b_' . $i),
-                'jawaban_c' => $this->request->getPost('jawaban_c_' . $i),
-                'jawaban_d' => $this->request->getPost('jawaban_d_' . $i),
-                'jawaban_benar' => $this->request->getPost('jawaban_benar_' . $i),
-                'poin' => $this->request->getPost('poin_' . $i)
-            ];
-
-            // Pastikan soal disimpan dengan benar
-            if (!$soalModel->save($soalData)) {
-                return redirect()->back()->with('error', 'Gagal menyimpan soal.');
-            }
-        }
-
-        // Redirect setelah soal berhasil disimpan
-        return redirect()->to('/guru/viewQuiz/' . $this->request->getPost('quiz_id'))->with('success', 'Soal berhasil ditambahkan!');
-    }
-    public function hapusSoal($id)
-    {
-        $soalModel = new SoalModel();
-
-        // Cari soal berdasarkan ID
-        $soal = $soalModel->find($id);
-
-        // Pastikan soal ditemukan
-        if ($soal) {
-            // Hapus soal dari database
-            $soalModel->delete($id);
-
-            // Redirect kembali ke halaman view quiz dengan pesan sukses
-            return redirect()->to('/guru/viewQuiz/' . $soal['quiz_id'])->with('success', 'Soal berhasil dihapus!');
-        }
-
-        return redirect()->to('/guru/viewQuiz/' . $soal['quiz_id'])->with('error', 'Soal tidak ditemukan!');
-    }
-
-
-
-    public function uploadMateri()
-    {
-        // Mendapatkan file yang diupload dari form
-        $file = $this->request->getFile('file_materi');
-
-        if ($file->isValid() && !$file->hasMoved()) {
-            // Menentukan nama file dan folder penyimpanan
-            $fileName = $file->getName();
-
-            // Menentukan path folder berdasarkan kelas_id
-            $kelasId = $this->request->getPost('kelas_id');
-            $directory = ROOTPATH . 'public/uploads/materi/kelas_' . $kelasId . '/';
-
-            // Membuat direktori jika belum ada
-            if (!is_dir($directory)) {
-                mkdir($directory, 0777, true);  // Membuat folder dengan permission yang tepat
-            }
-
-            // Memindahkan file ke direktori yang telah ditentukan
-            $file->move($directory, $fileName);
-
-            // Menyimpan data materi ke dalam database
-            $materiModel = new MateriModel();
-            $materiData = [
-                'kelas_id' => $kelasId,
-                'judul' => $this->request->getPost('judul'),
-                'file_name' => $fileName,
-                'file_path' => 'uploads/materi/kelas_' . $kelasId . '/' . $fileName,  // Path relatif
-                'level' => (int) $this->request->getPost('level')  // Menyimpan level sebagai integer
-            ];
-
-            $materiModel->save($materiData);
-
-            return redirect()->to('/guru/viewClasses')->with('success', 'Materi berhasil diunggah!');
-        }
-
-        return redirect()->back()->with('error', 'Gagal mengunggah file.');
-    }
-
-    // Fungsi untuk menghapus materi
-    public function hapusMateri($id)
-    {
-        $materiModel = new MateriModel();
-
-        // Cari materi berdasarkan ID
-        $materi = $materiModel->find($id);
-
-        // Pastikan materi ditemukan
-        if ($materi) {
-            // Hapus file fisik jika diperlukan (misalnya, di direktori uploads)
-            if (file_exists(ROOTPATH . 'public/' . $materi['file_path'])) {
-                unlink(ROOTPATH . 'public/' . $materi['file_path']);
-            }
-
-            // Hapus materi dari database
-            $materiModel->delete($id);
-
-            // Redirect kembali ke halaman detail kelas dengan pesan sukses
-            return redirect()->to('/guru/detailKelas/' . $materi['kelas_id'])->with('success', 'Materi berhasil dihapus!');
-        }
-
-        return redirect()->to('/guru/detailKelas/' . $materi['kelas_id'])->with('error', 'Materi tidak ditemukan!');
-    }
     public function hapusQuiz($id)
     {
-        $quizModel = new QuizModel();
-        $soalModel = new SoalModel();  // Model untuk tabel soal
+        // Menghapus quiz dan semua soal terkait
+        $quiz = $this->quizModel->find($id);
 
-        // Cari quiz berdasarkan ID
-        $quiz = $quizModel->find($id);
-
-        // Pastikan quiz ditemukan
-        if ($quiz) {
-            // Hapus semua soal yang terkait dengan quiz ini
-            $soalModel->where('quiz_id', $id)->delete(); // Menghapus soal yang terkait dengan quiz
-
-            // Hapus quiz dari database
-            $quizModel->delete($id);
-
-            // Redirect kembali ke halaman detail kelas dengan pesan sukses
-            return redirect()->to('/guru/detailKelas/' . $quiz['kelas_id'])->with('success', 'Quiz berhasil dihapus!');
+        if (!$quiz) {
+            return redirect()->back()->with('error', 'Quiz tidak ditemukan!');
         }
 
-        return redirect()->to('/guru/detailKelas/' . $quiz['kelas_id'])->with('error', 'Quiz tidak ditemukan!');
+        // Hapus semua soal yang terkait dengan kuis ini
+        $this->soalModel->where('quiz_id', $id)->delete();
+
+        // Hapus kuis itu sendiri
+        if ($this->quizModel->delete($id)) {
+            return redirect()->to('/guru/detailKelas/' . $quiz['kelas_id'])->with('success', 'Quiz berhasil dihapus!');
+        } else {
+            return redirect()->back()->with('error', 'Gagal menghapus quiz. Silakan coba lagi.');
+        }
+    }
+
+    /* Soal Management */
+    public function addSoal($quiz_id)
+    {
+        // Menampilkan form tambah soal untuk quiz tertentu
+        $quiz = $this->quizModel->find($quiz_id);
+
+        if (!$quiz) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Quiz tidak ditemukan.');
+        }
+
+        return view('guru/add_soal', [
+            'quiz_id'     => $quiz_id,
+            'jumlah_soal' => $quiz['jumlah_soal']
+        ]);
+    }
+
+    public function saveSoal()
+    {
+        $quiz_id     = $this->request->getPost('quiz_id');
+        $jumlah_soal = (int)$this->request->getPost('jumlah_soal');
+
+        if (!$quiz_id || !$jumlah_soal) {
+            return redirect()->to(site_url('/guru/addSoal/' . $quiz_id))->with('error', 'Data tidak lengkap.');
+        }
+
+        // Membuat aturan validasi dinamis berdasarkan jumlah soal
+        $rules = [];
+        for ($i = 1; $i <= $jumlah_soal; $i++) {
+            $rules["soal_$i"]           = 'required|min_length[3]';
+            $rules["jawaban_a_$i"]      = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_b_$i"]      = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_c_$i"]      = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_d_$i"]      = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_benar_$i"]  = 'required|in_list[a,b,c,d]';
+            $rules["poin_$i"]           = 'required|integer|greater_than[0]';
+        }
+
+        // Memvalidasi semua input soal
+        if (!$this->validate($rules)) {
+            return redirect()->to(site_url('/guru/addSoal/' . $quiz_id))->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        // Menyimpan setiap soal ke database
+        $allSoalSaved = true;
+        for ($i = 1; $i <= $jumlah_soal; $i++) {
+            $data = [
+                'quiz_id'       => $quiz_id,
+                'soal'          => $this->request->getPost("soal_$i"),
+                'jawaban_a'     => $this->request->getPost("jawaban_a_$i"),
+                'jawaban_b'     => $this->request->getPost("jawaban_b_$i"),
+                'jawaban_c'     => $this->request->getPost("jawaban_c_$i"),
+                'jawaban_d'     => $this->request->getPost("jawaban_d_$i"),
+                'jawaban_benar' => $this->request->getPost("jawaban_benar_$i"),
+                'poin'          => (int)$this->request->getPost("poin_$i"),
+            ];
+
+            if (!$this->soalModel->save($data)) {
+                $allSoalSaved = false;
+                break;
+            }
+        }
+
+        // Memberikan feedback berdasarkan hasil penyimpanan soal
+        if ($allSoalSaved) {
+            return redirect()->to("/guru/viewQuiz/$quiz_id")->with('success', 'Semua soal berhasil ditambahkan.');
+        } else {
+            return redirect()->back()->withInput()->with('error', 'Beberapa soal gagal disimpan. Silakan periksa input Anda.');
+        }
+    }
+
+    public function editSoal($quiz_id)
+    {
+        // Menampilkan form edit soal untuk quiz tertentu
+        $quiz = $this->quizModel->find($quiz_id);
+        if (!$quiz) {
+            return redirect()->back()->with('error', 'Quiz tidak ditemukan.');
+        }
+
+        $soalList = $this->soalModel->where('quiz_id', $quiz_id)->findAll();
+
+        return view('guru/edit_soal', [
+            'soalList'      => $soalList,
+            'quiz_id'       => $quiz_id,
+            'jumlah_soal' => $quiz['jumlah_soal']
+        ]);
+    }
+
+    public function updateSoal()
+    {
+        $quiz_id  = $this->request->getPost('quiz_id');
+        $soal_ids = $this->request->getPost('soal_id'); // Array dari ID soal
+
+        if (empty($soal_ids)) {
+            return redirect()->to(site_url('/guru/editSoal/' . $quiz_id))->with('error', 'Tidak ada soal yang dipilih untuk diperbarui.');
+        }
+
+        // Ambil semua data input sebagai array untuk memudahkan akses
+        $inputSoal         = $this->request->getPost('soal');
+        $inputJawabanA     = $this->request->getPost('jawaban_a');
+        $inputJawabanB     = $this->request->getPost('jawaban_b');
+        $inputJawabanC     = $this->request->getPost('jawaban_c');
+        $inputJawabanD     = $this->request->getPost('jawaban_d');
+        $inputJawabanBenar = $this->request->getPost('jawaban_benar');
+        $inputPoin         = $this->request->getPost('poin');
+
+        // Buat aturan validasi untuk setiap elemen array
+        $rules = [];
+        foreach ($soal_ids as $index => $soalId) {
+            $rules["soal.$index"]          = 'required|min_length[3]|max_length[500]';
+            $rules["jawaban_a.$index"]     = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_b.$index"]     = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_c.$index"]     = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_d.$index"]     = 'required|min_length[1]|max_length[500]';
+            $rules["jawaban_benar.$index"] = 'required|in_list[a,b,c,d]';
+            $rules["poin.$index"]          = 'required|integer|greater_than[0]';
+        }
+
+        // Memvalidasi semua input soal
+        if (!$this->validate($rules)) {
+            return redirect()->to(site_url('/guru/editSoal/' . $quiz_id))->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        // Memperbarui setiap soal di database
+        $allSoalUpdated = true;
+        foreach ($soal_ids as $index => $soalId) {
+            $data = [
+                'id'            => $soalId,
+                'quiz_id'       => $quiz_id,
+                'soal'          => $inputSoal[$index],
+                'jawaban_a'     => $inputJawabanA[$index],
+                'jawaban_b'     => $inputJawabanB[$index],
+                'jawaban_c'     => $inputJawabanC[$index],
+                'jawaban_d'     => $inputJawabanD[$index],
+                'jawaban_benar' => $inputJawabanBenar[$index],
+                'poin'          => (int)$inputPoin[$index],
+            ];
+
+            if (!$this->soalModel->save($data)) {
+                $allSoalUpdated = false;
+                error_log('Gagal menyimpan soal ID: ' . $soalId);
+                break;
+            }
+        }
+
+        // Memberikan feedback berdasarkan hasil update soal
+        if ($allSoalUpdated) {
+            $this->updateQuizResultsScore($quiz_id);
+
+            return redirect()->to("/guru/viewQuiz/$quiz_id")->with('success', 'Semua soal berhasil diperbarui.');
+        } else {
+            return redirect()->to(site_url('/guru/editSoal/' . $quiz_id))->withInput()->with('error', 'Beberapa soal gagal diperbarui. Silakan periksa input Anda atau coba lagi.');
+        }
+    }
+
+    /**
+     * Menghapus soal tertentu dari kuis.
+     */
+    public function hapusSoal($id)
+    {
+        // Mencari soal dan menghapusnya
+        $soal = $this->soalModel->find($id);
+
+        if (!$soal) {
+            return redirect()->back()->with('error', 'Soal tidak ditemukan!');
+        }
+
+        $quiz_id = $soal['quiz_id'];
+
+        // Menghapus data soal dari database
+        if ($this->soalModel->delete($id)) {
+            $this->updateQuizResultsScore($quiz_id);
+
+            return redirect()->to('/guru/viewQuiz/' . $quiz_id)->with('success', 'Soal berhasil dihapus!');
+        } else {
+            return redirect()->back()->with('error', 'Gagal menghapus soal. Silakan coba lagi.');
+        }
+    }
+
+    // LIST MURID
+    public function listMurid($kelasId)
+    {
+        if (session()->get('role_id') != 2) {
+            return redirect()->to('/')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
+        $kelas = $this->kelasModel->find($kelasId);
+
+        if (!$kelas) {
+            return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+        }
+
+        $perPage = 10;
+
+        $muridList = $this->kelasSiswaModel
+            ->select('kelas_siswa.id, kelas_siswa.murid_id, users.username, users.email, kelas_siswa.status, kelas_siswa.created_at as tanggal_join')
+            ->join('users', 'users.id = kelas_siswa.murid_id')
+            ->where('kelas_siswa.kelas_id', $kelasId)
+            ->orderBy('users.username', 'ASC')
+            ->paginate($perPage);
+
+        $pager = $this->kelasSiswaModel->pager;
+
+        $data = [
+            'title'     => 'Daftar Murid di Kelas ' . $kelas['nama_kelas'],
+            'kelas'     => $kelas,
+            'muridList' => $muridList,
+            'kelasId'   => $kelasId,
+            'pager'     => $pager,
+        ];
+
+        return view('guru/list_murid', $data);
+    }
+    public function listMuridMateri($materiId)
+    {
+        if (session()->get('role_id') != 2) {
+            return redirect()->to('/')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
+        $materi = $this->materiModel->find($materiId);
+
+        if (!$materi) {
+            return redirect()->to('/guru/listMateri')->with('error', 'Materi tidak ditemukan.');
+        }
+
+        $perPage = 10;
+
+        $muridMateriList = $this->materiSiswaModel
+            ->select('materi_siswa.id, materi_siswa.murid_id, users.username, users.email, materi_siswa.status, materi_siswa.created_at as waktu_akses, materi_siswa.updated_at as waktu_update')
+            ->join('users', 'users.id = materi_siswa.murid_id')
+            ->where('materi_siswa.materi_id', $materiId)
+            ->orderBy('users.username', 'ASC')
+            ->paginate($perPage);
+
+        $pager = $this->materiSiswaModel->pager;
+        $kelasId = $materi['kelas_id'];
+
+        $data = [
+            'title'             => 'Daftar Murid yang Mengakses Materi: ' . $materi['judul'],
+            'materi'            => $materi,
+            'muridMateriList'   => $muridMateriList,
+            'materiId'          => $materiId,
+            'pager'             => $pager,
+            'kelasId'           => $kelasId
+        ];
+
+        return view('guru/list_murid_materi', $data);
+    }
+
+    public function listMuridQuiz($quizId)
+    {
+        if (session()->get('role_id') != 2) {
+            return redirect()->to('/')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
+        $quiz = $this->quizModel->find($quizId);
+        if (!$quiz) {
+            return redirect()->to('/guru/listQuiz')->with('error', 'Quiz tidak ditemukan.');
+        }
+
+        $perPage = 10;
+
+        $quizScoresList = $this->quizResultsModel
+            ->select('quiz_results.id, quiz_results.murid_id, users.username, users.email, quiz_results.score, quiz_results.max_score, quiz_results.created_at as waktu_selesai')
+            ->join('users', 'users.id = quiz_results.murid_id')
+            ->where('quiz_results.quiz_id', $quizId)
+            // ->where('quiz_results.kelas_id', $kelasId)
+            ->orderBy('users.username', 'ASC')
+            ->orderBy('quiz_results.created_at', 'DESC')
+            ->paginate($perPage);
+
+        $pager = $this->quizResultsModel->pager;
+
+        $kelasId = $quiz['kelas_id'];
+
+        $data = [
+            'title'             => 'Hasil Quiz "' . esc($quiz['judul_quiz']) . '"',
+            'quiz'              => $quiz,
+            'quizScoresList'    => $quizScoresList,
+            'quizId'            => $quizId,
+            'kelasId'           => $kelasId,
+            'pager'             => $pager,
+        ];
+        return view('guru/list_murid_quiz', $data);
+    }
+
+    // VOID FUNGSI
+    protected function updateQuizResultsScore($quiz_id)
+    {
+        $quizAnswersModel = new QuizAnswersModel();
+
+        // Ambil semua soal dan mapping point terbaru
+        $soals = $this->soalModel->whereQuiz($quiz_id)->findAll();
+        if (empty($soals)) return;
+
+        $soalPoints = [];
+        foreach ($soals as $soal) {
+            $soalPoints[$soal['id']] = $soal['poin'];
+        }
+
+        // Hitung max_score baru
+        $newMaxScore = array_sum($soalPoints);
+
+        // Ambil semua hasil quiz untuk quiz ini
+        $quizResults = $this->quizResultsModel->whereQuiz($quiz_id)->findAll();
+
+        foreach ($quizResults as $result) {
+            $quizResultId = $result['id'];
+            $kelasId = $result['kelas_id'];
+            $muridId = $result['murid_id'];
+
+            // Ambil jawaban murid ini saja
+            $answers = $quizAnswersModel
+                ->where('quiz_id', $quiz_id)
+                ->where('kelas_id', $kelasId)
+                ->where('murid_id', $muridId)
+                ->findAll();
+
+            $score = 0;
+
+            foreach ($answers as $answer) {
+                $soalId = $answer['soal_id'];
+                $isCorrect = $answer['is_correct'] ?? 0;
+
+                if ($isCorrect && isset($soalPoints[$soalId])) {
+                    $score += $soalPoints[$soalId];
+                }
+            }
+
+            // Update skor dan max_score dengan nilai baru
+            $this->quizResultsModel->update($quizResultId, [
+                'score' => $score,
+                'max_score' => $newMaxScore
+            ]);
+        }
     }
 }
+
+
+    // public function editStatus($id)
+    // {
+    //     // Mencari kelas berdasarkan ID
+    //     $kelas = $this->kelasModel->find($id);
+
+    //     if (!$kelas) {
+    //         return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+    //     }
+
+    //     $statusOptions = ['aktif', 'non_aktif'];
+    //     return view('guru/edit_status', [
+    //         'kelas'         => $kelas,
+    //         'statusOptions' => $statusOptions
+    //     ]);
+    // }
+
+    // public function updateStatus($id)
+    // {
+    //     // Aturan validasi untuk status kelas
+    //     $rules = [
+    //         'status' => 'required|in_list[aktif,non_aktif]',
+    //     ];
+
+    //     // Memvalidasi input status
+    //     if (!$this->validate($rules)) {
+    //         return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+    //     }
+
+    //     // Mencari kelas dan memperbarui statusnya
+    //     $kelas = $this->kelasModel->find($id);
+    //     if (!$kelas) {
+    //         return redirect()->to('/guru/viewClasses')->with('error', 'Kelas tidak ditemukan.');
+    //     }
+
+    //     $data = ['status' => $this->request->getPost('status')];
+
+    //     // Memperbarui status kelas dan memberikan feedback
+    //     if ($this->kelasModel->update($id, $data)) {
+    //         return redirect()->to('/guru/viewClasses')->with('success', 'Status kelas berhasil diperbarui!');
+    //     } else {
+    //         return redirect()->back()->withInput()->with('error', 'Gagal memperbarui status kelas. Silakan coba lagi.');
+    //     }
+    // }

@@ -18,6 +18,7 @@ class AddColumnskelasidOnTableQuizAnswer extends Migration
                 'after'      => 'quiz_id',
             ],
         ]);
+        $this->forge->addForeignKey('kelas_id', 'kelas', 'id', 'CASCADE', 'CASCADE');
     }
 
     public function down()

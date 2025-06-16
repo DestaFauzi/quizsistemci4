@@ -37,7 +37,7 @@ class CreateQuizTable extends Migration
             ],
         ]);
         $this->forge->addPrimaryKey('id');
-        $this->forge->addForeignKey('kelas_id', 'kelas', 'id');
+        $this->forge->addForeignKey('kelas_id', 'kelas', 'id', 'CASCADE', 'CASCADE');
         $this->forge->createTable('quiz');
     }
 
