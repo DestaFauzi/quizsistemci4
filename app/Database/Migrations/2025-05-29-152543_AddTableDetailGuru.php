@@ -14,7 +14,7 @@ class AddTableDetailGuru extends Migration
                 'unsigned' => true,
                 'auto_increment' => true,
             ],
-            'guru_id' => [
+            'user_id' => [
                 'type' => 'INT',
                 'unsigned' => true,
             ],
@@ -38,7 +38,7 @@ class AddTableDetailGuru extends Migration
             ],
         ]);
         $this->forge->addPrimaryKey('id');
-        $this->forge->addForeignKey('guru_id', 'users', 'id');
+        $this->forge->addForeignKey('user_id', 'users', 'id');
         $this->forge->createTable('detail_guru');
     }
 

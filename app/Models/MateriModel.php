@@ -8,7 +8,7 @@ class MateriModel extends Model
 {
     protected $table            = 'materi';
     protected $primaryKey       = 'id';
-    protected $allowedFields    = ['kelas_id', 'judul', 'file_name', 'file_path', 'level', 'point'];
+    protected $allowedFields    = ['kelas_id', 'judul','nama_kelas', 'file_name', 'file_path', 'level', 'point'];
 
     public function getMateriByKelas($kelas_id)
     {

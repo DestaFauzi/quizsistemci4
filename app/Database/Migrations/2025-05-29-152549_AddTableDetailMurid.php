@@ -14,7 +14,7 @@ class AddTableDetailMurid extends Migration
                 'unsigned' => true,
                 'auto_increment' => true,
             ],
-            'murid_id' => [
+            'user_id' => [
                 'type' => 'INT',
                 'unsigned' => true,
             ],
@@ -45,7 +45,7 @@ class AddTableDetailMurid extends Migration
             ],
         ]);
         $this->forge->addPrimaryKey('id');
-        $this->forge->addForeignKey('murid_id', 'users', 'id');
+        $this->forge->addForeignKey('user_id', 'users', 'id');
         $this->forge->createTable('detail_murid');
     }
 

@@ -13,9 +13,9 @@ class DetailMurid extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['murid_id', 'nama_murid', 'nis', 'alamat', 'jurusan', 'kelas'];
+    protected $allowedFields    = ['user_id', 'nama_murid', 'nis', 'alamat', 'jurusan', 'kelas'];
     // Model configuration
-    protected bool $useTimestamps = true;
+    protected $useTimestamps = true;
     protected $dateFormat      = 'datetime';
     protected $createdField    = 'created_at';
     protected $updatedField    = 'updated_at';

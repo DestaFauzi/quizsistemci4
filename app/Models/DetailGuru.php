@@ -12,7 +12,7 @@ class DetailGuru extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['guru_id', 'nama_guru', 'nip', 'alamat'];
+    protected $allowedFields    = ['user_id', 'nama_guru', 'nip', 'alamat'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

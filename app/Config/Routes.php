@@ -22,6 +22,9 @@ $routes->group('admin', function ($routes) {
     $routes->get('kelolaMateri', 'AdminController::kelolaMateri');
     $routes->get('kelolaQuiz', 'AdminController::kelolaQuiz');
     $routes->get('kelolaPengguna', 'AdminController::kelolaPengguna');
+    //edit_guru
+    $routes->get('kelolaGuru', 'AdminController::kelolaGuru');
+    
 
     // Materi
     $routes->get('editMateri/(:num)', 'AdminController::editMateri/$1');
@@ -35,6 +38,16 @@ $routes->group('admin', function ($routes) {
 });
 
 $routes->get('/lihatmateri/(:num)', 'AdminController::lihatMateri/$1');
+//admin edit guru
+$routes->get('editGuru/(:num)', 'AdminController::editGuru/$1');
+$routes->post('updateGuru/(:num)', 'AdminController::updateGuru/$1');
+// $routes->get('hapusGuru/(:num)', 'AdminController::hapusGuru/$1');
+
+
+//admin edit murid
+$routes->get('editMurid/(:num)', 'AdminController::editMurid/$1');
+$routes->post('updateMurid/(:num)', 'AdminController::updateMurid/$1');
+$routes->get('hapusPengguna/(:num)', 'AdminController::hapusPengguna/$1');
 
 // ROUTES GURU
 $routes->group('guru', function ($routes) {
