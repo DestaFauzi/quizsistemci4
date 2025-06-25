@@ -44,6 +44,7 @@ Ikuti langkah-langkah berikut untuk menginstal LMS BahasaKita:
 6. **Migrasi Database**
    ```bash[
    php spark migrate
+   php db:seed
    
 8. **Jalankan Server**
    ```bash[
