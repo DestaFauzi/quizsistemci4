@@ -27,19 +27,24 @@ Ikuti langkah-langkah berikut untuk menginstal LMS BahasaKita:
    https://github.com/DestaFauzi/quizsistemci4
    cd quizsistemci4
 2. **Install Composer**
+   ```bash[
    composer install
-3. **Setting Database**
+4. **Setting Database**
+   ```bash[
    cp .env.example .env
 
    \.env
+   ```bash[
    database.default.hostname = localhost
    database.default.database = nama_database
    database.default.username = username
    database.default.password = password
    database.default.DBDriver = MySQLi
 
-4. **Migrasi Database**
+6. **Migrasi Database**
+   ```bash[
    php spark migrate
    
-6. **Jalankan Server**
+8. **Jalankan Server**
+   ```bash[
    php spark serve
