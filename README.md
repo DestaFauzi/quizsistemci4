@@ -7,7 +7,7 @@ LMS BahasaKita adalah sistem manajemen pembelajaran yang dirancang untuk memfasi
 - Manajemen pengguna (admin, guru, siswa)
 - Pengelolaan materi pembelajaran
 - Penilaian dan umpan balik
-- Forum diskusi
+- Fitur Leaderboard
 
 ## Prerequisites
 
